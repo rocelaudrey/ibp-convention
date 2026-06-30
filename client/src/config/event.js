@@ -3,28 +3,42 @@
 // ──────────────────────────────────────────────────────────────
 
 export const EVENT_INFO = {
-  title:    'IBP North Luzon Regional Convention',
-  region:   'North Luzon Region',
-  theme:    'IBP: Empowering Justice, Embracing Diversity',
-  themeIl:  'IBP: Panangpasiglat iti Hustisya, Panangipateg iti Dadduma',
-  date:     '[Month DD–DD, YYYY]',
-  venue:    '[Venue Name, City/Province]',
-  regOpen:  '[Start Date] – [End Date]',
-  deadline: '[Month DD, YYYY]',
-  email:    'contact@email.com'
+  title: "IBP North Luzon Regional Convention",
+  region: "North Luzon Region",
+  theme: "IBP: Empowering Justice, Embracing Diversity",
+  themeIl: "IBP: Panangpasiglat iti Hustisya, Panangipateg iti Dadduma",
+  date: "October 15-17, 2026",
+  venue: "Bayombong, Nueva Vizcaya",
+  regOpen: "[Start Date] – [End Date]",
+  deadline: "[Month DD, YYYY]",
+  email: "contact@email.com",
 };
 
 export const CHAPTERS = [
-  'Abra', 'Apayao', 'Batanes', 'Cagayan', 'Ifugao', 'Isabela',
-  'Kalinga', 'Mountain Province', 'Nueva Vizcaya', 'Quirino',
-  'Aurora', 'Other'
+  "Abra",
+  "Apayao",
+  "Batanes",
+  "Cagayan",
+  "Ifugao",
+  "Isabela",
+  "Kalinga",
+  "Mountain Province",
+  "Nueva Vizcaya",
+  "Quirino",
+  "Aurora",
+  "Other",
 ];
 
 export const REGISTRATION_TYPES = [
-  { value: 'earlybird', label: 'Early Bird',     fee: '₱ —', badge: 'earlybird' },
-  { value: 'regular',   label: 'Regular',        fee: '₱ —', badge: 'regular' },
-  { value: 'walkin',    label: 'Walk-in',        fee: '₱ —', badge: 'walkin' },
-  { value: 'senior',    label: 'Senior Citizen', fee: '₱ —', badge: 'senior' }
+  {
+    value: "earlybird",
+    label: "Early Bird",
+    fee: "₱ 8,000",
+    badge: "earlybird",
+  },
+  { value: "regular", label: "Regular", fee: "₱ 10,000", badge: "regular" },
+  { value: "walkin", label: "Walk-in", fee: "₱ 12,000", badge: "walkin" },
+  { value: "senior", label: "Senior Citizen", fee: "₱ 6,400", badge: "senior" },
 ];
 
 export const CATEGORY_LABELS = REGISTRATION_TYPES.reduce((acc, t) => {
@@ -52,4 +66,4 @@ export function isSeniorByBirthday(birthday) {
 
 // Admin password used by the local-storage mode gate. The server has its own.
 export const LOCAL_ADMIN_PASSWORD =
-  import.meta.env.VITE_ADMIN_PASSWORD || 'ibpadmin2026';
+  import.meta.env.VITE_ADMIN_PASSWORD || "ibpadmin2026";

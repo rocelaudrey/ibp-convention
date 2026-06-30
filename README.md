@@ -27,7 +27,7 @@ npm run dev
 Open the printed URL (usually http://localhost:5173).
 
 - Registration page: `/`
-- Admin portal:      `/admin`  (default password: `ibpadmin2026`)
+- Admin portal: `/admin` (default password: `ibpadmin2026`)
 
 ### 2. With the backend
 
@@ -47,11 +47,11 @@ npm run dev
 
 ## Deployment
 
-| Piece  | Suggested host                          | Notes                                          |
-|--------|------------------------------------------|------------------------------------------------|
-| Client | Vercel / Netlify / Render Static         | `npm run build` → upload `client/dist/`        |
-| Server | Render / Railway / Fly.io                | Set `MONGODB_URI`, `ADMIN_PASSWORD`, `PORT`    |
-| DB     | MongoDB Atlas (free tier works for MVP)  | Whitelist server IP, copy the connection URI   |
+| Piece  | Suggested host                          | Notes                                        |
+| ------ | --------------------------------------- | -------------------------------------------- |
+| Client | Vercel / Netlify / Render Static        | `npm run build` → upload `client/dist/`      |
+| Server | Render / Railway / Fly.io               | Set `MONGODB_URI`, `ADMIN_PASSWORD`, `PORT`  |
+| DB     | MongoDB Atlas (free tier works for MVP) | Whitelist server IP, copy the connection URI |
 
 Don't forget to set `VITE_API_URL` on the client build to your deployed server URL.
 
