@@ -11,12 +11,12 @@ const AttendeeSchema = new mongoose.Schema(
     // so older records still load, but enforced by the form for new entries.
     birthday: { type: String, default: '' },
 
-    email:    { type: String, required: true, trim: true, lowercase: true, index: true },
+    email:    { type: String, default: '', trim: true, lowercase: true, index: true },
     phone:    { type: String, required: true, trim: true },
 
-    rollnum:  { type: String, required: true, trim: true },
-    chapter:  { type: String, required: true, trim: true, index: true },
-    position: { type: String, default: '', trim: true },
+    rollnum:      { type: String, required: true, trim: true },
+    chapter:      { type: String, required: true, trim: true, index: true },
+    barAdmission: { type: String, default: '', trim: true },
     category: {
       type: String,
       required: true,

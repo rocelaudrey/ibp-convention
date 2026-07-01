@@ -13,7 +13,7 @@ const EMPTY = {
   fname: '', lname: '', mname: '',
   birthday: '',
   email: '', phone: '',
-  rollnum: '', chapter: '', position: '', category: '',
+  rollnum: '', chapter: '', chapterOther: '', barAdmission: '', category: '',
   dietary: ''
 };
 
@@ -61,17 +61,21 @@ export default function RegistrationForm() {
     e.preventDefault();
     setError('');
 
-    const { fname, lname, birthday, email, phone, rollnum, chapter, category } = form;
+    const { fname, lname, birthday, email, phone, rollnum, chapter, chapterOther, category } = form;
     if (!fname.trim() || !lname.trim())  return setError('Please enter your full name (first and last name are required).');
     if (!birthday)                       return setError('Please enter your date of birth.');
-    if (!email.trim())                   return setError('Please enter your email address.');
-    if (!isValidEmail(email))            return setError('Please enter a valid email address (e.g. name@example.com).');
+    if (email.trim() && !isValidEmail(email))
+      return setError('Please enter a valid email address (e.g. name@example.com).');
     if (!phone.trim())                   return setError('Please enter your contact number.');
-    if (!rollnum.trim())                 return setError('Please enter your IBP Roll Number.');
+    if (!rollnum.trim())                 return setError('Please enter your Roll of Attorneys Number.');
     if (!chapter)                        return setError('Please select your IBP Chapter.');
+    if (chapter === 'Other' && !chapterOther.trim())
+      return setError('Please enter your IBP Chapter name.');
     if (!category)                       return setError('Please select your registration type.');
     if (!proof)                          return setError('Please upload your proof of payment before submitting.');
     if (!agree)                          return setError('Please agree to the terms and conditions to proceed.');
+
+    const finalChapter = chapter === 'Other' ? chapterOther.trim() : chapter;
 
     setSubmitting(true);
     try {
@@ -80,9 +84,11 @@ export default function RegistrationForm() {
       catch { /* ignore — registration still proceeds */ }
 
       const ref = 'IBP-NL-' + Date.now().toString().slice(-7);
+      const { chapterOther: _drop, ...rest } = form;
       const attendee = await api.createAttendee({
         ref,
-        ...form,
+        ...rest,
+        chapter:      finalChapter,
         proofName:    proof.name,
         proofType:    proof.type || '',
         proofDataUrl
@@ -147,7 +153,7 @@ export default function RegistrationForm() {
               )}
             </div>
             <div className="field-group">
-              <label htmlFor="email">Email Address <span className="req">*</span></label>
+              <label htmlFor="email">Email Address</label>
               <input id="email" type="email" value={form.email} onChange={e => update('email', e.target.value)} placeholder="you@example.com" autoComplete="email" />
             </div>
             <div className="field-group">
@@ -165,19 +171,50 @@ export default function RegistrationForm() {
           </div>
           <div className="fields-grid">
             <div className="field-group field-full">
-              <label htmlFor="rollnum">IBP Roll Number <span className="req">*</span></label>
+              <label htmlFor="rollnum">Roll of Attorneys Number <span className="req">*</span></label>
               <input id="rollnum" type="text" value={form.rollnum} onChange={e => update('rollnum', e.target.value)} placeholder="e.g. 12345" />
             </div>
             <div className="field-group field-full">
               <label htmlFor="chapter">IBP Chapter <span className="req">*</span></label>
-              <select id="chapter" value={form.chapter} onChange={e => update('chapter', e.target.value)}>
+              <select
+                id="chapter"
+                value={form.chapter}
+                onChange={e => {
+                  const v = e.target.value;
+                  setForm(prev => ({
+                    ...prev,
+                    chapter: v,
+                    chapterOther: v === 'Other' ? prev.chapterOther : '',
+                  }));
+                }}
+              >
                 <option value="">— Select your Chapter —</option>
                 {CHAPTERS.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
+            {form.chapter === 'Other' && (
+              <div className="field-group field-full">
+                <label htmlFor="chapterOther">Specify Chapter <span className="req">*</span></label>
+                <input
+                  id="chapterOther"
+                  type="text"
+                  value={form.chapterOther}
+                  onChange={e => update('chapterOther', e.target.value)}
+                  placeholder="e.g. Pangasinan"
+                />
+              </div>
+            )}
             <div className="field-group field-full">
-              <label htmlFor="position">Designation / Position</label>
-              <input id="position" type="text" value={form.position} onChange={e => update('position', e.target.value)} placeholder="e.g. Chapter President, Member" />
+              <label htmlFor="barAdmission">Year Admitted to the Bar</label>
+              <input
+                id="barAdmission"
+                type="number"
+                min="1940"
+                max={new Date().getFullYear()}
+                value={form.barAdmission}
+                onChange={e => update('barAdmission', e.target.value)}
+                placeholder="e.g. 2015"
+              />
             </div>
             <div className="field-group field-full">
               <label htmlFor="category">Registration Type <span className="req">*</span></label>

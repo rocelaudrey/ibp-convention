@@ -1,7 +1,7 @@
 // localStorage-backed implementation of the data API.
 // Same shape as apiAdapter.js so they're interchangeable.
-
-import { LOCAL_ADMIN_PASSWORD } from '../config/event.js';
+//
+// Admin sign-in is intentionally disabled here — see adminLogin() below.
 
 const STORAGE_KEY = 'ibpNLConvention.attendees';
 const SESSION_KEY = 'ibpNLConvention.adminSession';
@@ -36,7 +36,7 @@ export async function createAttendee(data) {
     fname: '', lname: '', mname: '',
     birthday: '',
     email: '', phone: '',
-    rollnum: '', chapter: '', position: '', category: '',
+    rollnum: '', chapter: '', barAdmission: '', category: '',
     dietary: '',
     proofName: '', proofType: '', proofDataUrl: null,
     registeredAt: new Date().toISOString(),
@@ -74,12 +74,14 @@ export async function deleteAttendee(ref) {
   return { ok: true };
 }
 
-export async function adminLogin(password) {
-  if (password === LOCAL_ADMIN_PASSWORD) {
-    sessionStorage.setItem(SESSION_KEY, '1');
-    return { ok: true };
-  }
-  return { ok: false, error: 'Incorrect password.' };
+// Admin panel is server-only. In local (no backend) mode we hard-refuse
+// login and expose a currentUser of null so the AdminPage can render the
+// "server required" screen instead of a login form.
+export async function adminLogin() {
+  return {
+    ok: false,
+    error: 'Admin sign-in requires the API server. Set VITE_API_MODE=api and VITE_API_URL, then try again.',
+  };
 }
 
 export async function adminLogout() {
@@ -87,6 +89,13 @@ export async function adminLogout() {
   return { ok: true };
 }
 
-export function isAdminAuthed() {
-  return sessionStorage.getItem(SESSION_KEY) === '1';
-}
+export function isAdminAuthed() { return false; }
+export function currentUser()   { return null; }
+export async function refreshCurrentUser() { return null; }
+export async function changeOwnPassword() { return { ok: false, error: 'Not available in local mode.' }; }
+
+export async function listUsers()          { return []; }
+export async function createUser()         { throw new Error('User management requires the API server.'); }
+export async function updateUser()         { throw new Error('User management requires the API server.'); }
+export async function deleteUser()         { throw new Error('User management requires the API server.'); }
+export async function resetUserPassword()  { throw new Error('User management requires the API server.'); }

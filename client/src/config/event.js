@@ -8,24 +8,65 @@ export const EVENT_INFO = {
   theme: "IBP: Empowering Justice, Embracing Diversity",
   themeIl: "IBP: Panangpasiglat iti Hustisya, Panangipateg iti Dadduma",
   date: "October 15-17, 2026",
-  venue: "Bayombong, Nueva Vizcaya",
+  venue: "CMP Convention Center",
   regOpen: "[Start Date] – [End Date]",
   deadline: "[Month DD, YYYY]",
   email: "contact@email.com",
 };
 
+// ── Venue + nearby hotels ─────────────────────────────────────
+// `mapsQuery` is the search string passed to Google Maps. Tweak it
+// to refine the pin or open a different result.
+export const VENUE_LOCATION = {
+  name: "CMP Convention Center",
+  address: "Bayombong, Nueva Vizcaya",
+  mapsQuery: "CMP Convention Center Bayombong Nueva Vizcaya",
+};
+
+// Update with the real options once confirmed. `mapsQuery` powers the
+// "View on Maps" link for each card.
+export const NEARBY_HOTELS = [
+  {
+    name: "People's Hotel",
+    distance: "~1.5 km from venue",
+    notes: "Bayombong town proper, walking distance to restaurants.",
+    mapsQuery: "People's Hotel Bayombong Nueva Vizcaya",
+  },
+  {
+    name: "Casa de Salvacion",
+    distance: "~2 km from venue",
+    notes: "Budget-friendly, near the public market.",
+    mapsQuery: "Casa de Salvacion Bayombong Nueva Vizcaya",
+  },
+  {
+    name: "La Mont Bleu Hotel",
+    distance: "~3 km from venue",
+    notes: "Hillside views, on-site restaurant.",
+    mapsQuery: "La Mont Bleu Hotel Bayombong Nueva Vizcaya",
+  },
+  {
+    name: "DH Hotel",
+    distance: "~4 km from venue",
+    notes: "Newer build, family rooms available.",
+    mapsQuery: "DH Hotel Bayombong Nueva Vizcaya",
+  },
+];
+
 export const CHAPTERS = [
   "Abra",
   "Apayao",
+  "Baguio-Benguet",
   "Batanes",
   "Cagayan",
   "Ifugao",
+  "Ilocos Norte",
+  "Ilocos Sur",
   "Isabela",
   "Kalinga",
+  "La Union",
   "Mountain Province",
   "Nueva Vizcaya",
   "Quirino",
-  "Aurora",
   "Other",
 ];
 
@@ -63,7 +104,3 @@ export function isSeniorByBirthday(birthday) {
   const age = ageThisYear(birthday);
   return age != null && age >= SENIOR_AGE;
 }
-
-// Admin password used by the local-storage mode gate. The server has its own.
-export const LOCAL_ADMIN_PASSWORD =
-  import.meta.env.VITE_ADMIN_PASSWORD || "ibpadmin2026";

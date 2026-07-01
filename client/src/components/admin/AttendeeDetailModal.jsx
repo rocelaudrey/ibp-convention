@@ -59,10 +59,10 @@ export default function AttendeeDetailModal({
               )}
             </div>
           </div>
-          <div className="dg-item"><div className="dg-label">Roll Number</div><div className="dg-value">{a.rollnum || '—'}</div></div>
+          <div className="dg-item"><div className="dg-label">Roll of Attorneys Number</div><div className="dg-value">{a.rollnum || '—'}</div></div>
           <div className="dg-item"><div className="dg-label">Chapter</div><div className="dg-value">{a.chapter || '—'}</div></div>
           <div className="dg-item"><div className="dg-label">Registration Type</div><div className="dg-value">{CATEGORY_LABELS[a.category] || a.category || '—'}</div></div>
-          <div className="dg-item"><div className="dg-label">Designation</div><div className="dg-value">{a.position || '—'}</div></div>
+          <div className="dg-item"><div className="dg-label">Year Admitted to the Bar</div><div className="dg-value">{a.barAdmission || '—'}</div></div>
           <div className="dg-item dg-full"><div className="dg-label">Dietary / Special Needs</div><div className="dg-value">{a.dietary || 'None'}</div></div>
           <div className="dg-item"><div className="dg-label">Registered</div><div className="dg-value">{fmt(a.registeredAt)}</div></div>
           <div className="dg-item"><div className="dg-label">Status</div><div className="dg-value">{statusBits.join(' · ')}</div></div>

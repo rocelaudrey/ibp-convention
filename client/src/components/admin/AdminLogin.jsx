@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 export default function AdminLogin({ onLogin }) {
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -10,10 +11,10 @@ export default function AdminLogin({ onLogin }) {
     e.preventDefault();
     setError('');
     setBusy(true);
-    const res = await onLogin(password);
+    const res = await onLogin(username.trim(), password);
     setBusy(false);
-    if (!res.ok) setError(res.error || 'Incorrect password.');
-    else setPassword('');
+    if (!res.ok) setError(res.error || 'Sign-in failed.');
+    else { setUsername(''); setPassword(''); }
   }
 
   return (
@@ -23,10 +24,17 @@ export default function AdminLogin({ onLogin }) {
         <h2>Admin Portal</h2>
         <p className="sub">IBP North Luzon Convention · Sign in to continue</p>
         <input
-          type="password"
-          placeholder="Enter admin password"
-          autoComplete="current-password"
+          type="text"
+          placeholder="Username"
+          autoComplete="username"
           autoFocus
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
         />

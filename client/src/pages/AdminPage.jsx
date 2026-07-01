@@ -2,12 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAdminAuth } from '../hooks/useAdminAuth.js';
 import { useAttendees } from '../hooks/useAttendees.js';
 import { CATEGORY_LABELS } from '../config/event.js';
+import { isApiMode } from '../services/api.js';
 import { generateQRDataURL, buildQrPayload, downloadDataURL } from '../utils/qr.js';
 import { generateCertificatePDF } from '../utils/certificate.js';
 import { generateIdTagPDF } from '../utils/idTag.js';
 
 import AdminLogin from '../components/admin/AdminLogin.jsx';
 import AdminHeader from '../components/admin/AdminHeader.jsx';
+import ServerRequired from '../components/admin/ServerRequired.jsx';
 import StatsCards from '../components/admin/StatsCards.jsx';
 import CheckInBar from '../components/admin/CheckInBar.jsx';
 import FiltersBar from '../components/admin/FiltersBar.jsx';
@@ -15,7 +17,7 @@ import AttendeesTable from '../components/admin/AttendeesTable.jsx';
 import AttendeeDetailModal from '../components/admin/AttendeeDetailModal.jsx';
 
 export default function AdminPage() {
-  const { isAuthed, login, logout } = useAdminAuth();
+  const { isAuthed, user, isSuperAdmin, login, logout } = useAdminAuth();
   const { attendees, refresh, create, update, remove } = useAttendees();
 
   const [search,  setSearch]  = useState('');
@@ -30,6 +32,7 @@ export default function AdminPage() {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
+  if (!isApiMode) return <ServerRequired />;
   if (!isAuthed) return <AdminLogin onLogin={login} />;
 
   const chapters = useMemo(
@@ -42,7 +45,7 @@ export default function AdminPage() {
     if (search) {
       const q = search.trim().toLowerCase();
       r = r.filter(a => {
-        const hay = [a.fname, a.lname, a.mname, a.email, a.ref, a.rollnum, a.chapter, a.position]
+        const hay = [a.fname, a.lname, a.mname, a.email, a.ref, a.rollnum, a.chapter, a.barAdmission]
           .filter(Boolean).join(' ').toLowerCase();
         return hay.includes(q);
       });
@@ -98,7 +101,7 @@ export default function AdminPage() {
     if (attendees.length === 0) { alert('No registrants to export.'); return; }
     const headers = [
       'Ref','First Name','Middle Name','Last Name','Birthday','Email','Phone',
-      'Roll Number','Chapter','Position','Type',
+      'Roll of Attorneys Number','Chapter','Bar Admission Year','Type',
       'Dietary','Registered At','Paid','Checked-In','Checked-In At',
       'Certificate Issued','Certificate Issued At'
     ];
@@ -109,7 +112,7 @@ export default function AdminPage() {
     };
     const rowsCsv = attendees.map(a => [
       a.ref, a.fname, a.mname, a.lname, a.birthday || '', a.email, a.phone,
-      a.rollnum, a.chapter, a.position, CATEGORY_LABELS[a.category] || a.category,
+      a.rollnum, a.chapter, a.barAdmission, CATEGORY_LABELS[a.category] || a.category,
       a.dietary, a.registeredAt, a.paid ? 'Yes' : 'No', a.checkedIn ? 'Yes' : 'No',
       a.checkedInAt || '', a.certificateIssued ? 'Yes' : 'No', a.certificateIssuedAt || ''
     ].map(esc).join(','));
@@ -126,9 +129,9 @@ export default function AdminPage() {
   async function seedDemo() {
     if (!confirm('Add 3 sample registrants? (Existing data is kept.)')) return;
     const samples = [
-      { fname:'Maria',    lname:'Santos', birthday:'1985-04-12', chapter:'Cagayan',       category:'earlybird', position:'Member',            email:'maria.santos@example.com',    phone:'+63 917 111 1111', rollnum:'45678' },
-      { fname:'Jose',     lname:'Reyes',  birthday:'1978-09-30', chapter:'Nueva Vizcaya', category:'regular',   position:'Chapter President', email:'jose.reyes@example.com',      phone:'+63 917 222 2222', rollnum:'34567' },
-      { fname:'Liwayway', lname:'Aquino', birthday:'1962-01-05', chapter:'Isabela',       category:'senior',    position:'Member',            email:'liwayway.aquino@example.com', phone:'+63 917 333 3333', rollnum:'23456' }
+      { fname:'Maria',    lname:'Santos', birthday:'1985-04-12', chapter:'Cagayan',       category:'earlybird', barAdmission:'2012', email:'maria.santos@example.com',    phone:'+63 917 111 1111', rollnum:'45678' },
+      { fname:'Jose',     lname:'Reyes',  birthday:'1978-09-30', chapter:'Nueva Vizcaya', category:'regular',   barAdmission:'2005', email:'jose.reyes@example.com',      phone:'+63 917 222 2222', rollnum:'34567' },
+      { fname:'Liwayway', lname:'Aquino', birthday:'1962-01-05', chapter:'Isabela',       category:'senior',    barAdmission:'1990', email:'liwayway.aquino@example.com', phone:'+63 917 333 3333', rollnum:'23456' }
     ];
     for (let i = 0; i < samples.length; i++) {
       const s = samples[i];
@@ -142,7 +145,7 @@ export default function AdminPage() {
 
   return (
     <div className="admin-view">
-      <AdminHeader onLogout={logout} />
+      <AdminHeader user={user} isSuperAdmin={isSuperAdmin} onLogout={logout} />
       <StatsCards attendees={attendees} />
       <CheckInBar attendees={attendees} onCheckIn={toggleCheckIn} />
       <FiltersBar

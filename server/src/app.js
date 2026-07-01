@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import attendeesRouter from './routes/attendees.js';
 import authRouter from './routes/auth.js';
+import usersRouter from './routes/users.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
@@ -21,6 +22,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
 
 app.use('/api/auth',      authRouter);
 app.use('/api/attendees', attendeesRouter);
+app.use('/api/users',     usersRouter);
 
 app.use(errorHandler);
 

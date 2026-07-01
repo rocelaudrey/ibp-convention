@@ -5,7 +5,7 @@ export default function Hero() {
     <header className="hero">
       <div className="ibp-logo-wrap">
         <img
-          src="/ibp-logo.png"
+          src="/ibp-logo.webp"
           alt="Integrated Bar of the Philippines"
           onError={(e) => {
             e.currentTarget.parentElement.innerHTML =
