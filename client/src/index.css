@@ -177,7 +177,7 @@ body {
 /* Fields — sized for legibility on desktop; scales down on mobile below */
 .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .field-full  { grid-column: 1 / -1; }
-.field-group { display: flex; flex-direction: column; gap: 6px; }
+.field-group { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .field-group label { font-size: 14px; font-weight: 600; color: #5a3e75; letter-spacing: 0.2px; }
 .req { color: #dc2626; }
 
@@ -194,7 +194,18 @@ body {
   transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
+/* iOS Safari gives date + number inputs an intrinsic width based on their
+   picker chrome, which overflows narrow grid tracks. Strip the appearance
+   so they respect width: 100%. */
+.field-group input[type="date"],
+.field-group input[type="number"] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.field-group input[type="date"]::-webkit-date-and-time-value { text-align: left; }
 .field-group input:focus,
 .field-group select:focus,
 .field-group textarea:focus {
