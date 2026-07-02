@@ -41,7 +41,7 @@ function downloadCSV(filename, rows) {
 
 export default function ReportsPage() {
   const { isAuthed, user, isSuperAdmin, login, logout } = useAdminAuth();
-  const { attendees } = useAttendees();
+  const { attendees } = useAttendees({ enabled: isAuthed });
   const [tab, setTab] = useState('anniversaries');
 
   // ── access gates ───────────────────────────────────────────

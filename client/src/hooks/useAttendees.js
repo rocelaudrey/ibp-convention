@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import * as api from '../services/api.js';
 
-export function useAttendees() {
+// `enabled` (default true) gates the initial + auto refetch so callers can
+// hold off until the user is signed in. Flipping enabled false → true
+// triggers an immediate fetch.
+export function useAttendees({ enabled = true } = {}) {
   const [attendees, setAttendees] = useState([]);
   const [loading,   setLoading]   = useState(true);
   const [error,     setError]     = useState(null);
@@ -19,7 +22,10 @@ export function useAttendees() {
     }
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  useEffect(() => {
+    if (!enabled) return;
+    refresh();
+  }, [refresh, enabled]);
 
   const create = useCallback(async (data) => {
     const created = await api.createAttendee(data);

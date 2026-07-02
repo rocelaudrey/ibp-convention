@@ -18,7 +18,7 @@ import AttendeeDetailModal from '../components/admin/AttendeeDetailModal.jsx';
 
 export default function AdminPage() {
   const { isAuthed, user, isSuperAdmin, login, logout } = useAdminAuth();
-  const { attendees, refresh, create, update, remove } = useAttendees();
+  const { attendees, refresh, create, update, remove } = useAttendees({ enabled: isAuthed });
 
   const [search,  setSearch]  = useState('');
   const [chapter, setChapter] = useState('');
