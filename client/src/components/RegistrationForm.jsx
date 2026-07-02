@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   CHAPTERS, REGISTRATION_TYPES,
-  isSeniorByBirthday, ageThisYear, SENIOR_AGE
+  isSeniorByBirthday, ageThisYear, SENIOR_AGE,
+  isNewLawyerByBarYear,
 } from '../config/event.js';
 import * as api from '../services/api.js';
 import { generateQRDataURL, buildQrPayload } from '../utils/qr.js';
@@ -36,6 +37,7 @@ function isValidEmail(v) {
 export default function RegistrationForm() {
   const [form, setForm]       = useState(EMPTY);
   const [proof, setProof]     = useState(null);
+  const [pwdId, setPwdId]     = useState(null);
   const [agree, setAgree]     = useState(false);
   const [error, setError]     = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -45,17 +47,27 @@ export default function RegistrationForm() {
     setForm(prev => ({ ...prev, [field]: value }));
   }
 
-  // Auto-select Senior Citizen when the birthday qualifies.
-  // Runs whenever birthday changes — overwrites category if the registrant
-  // is a senior. They can still override manually after.
-  useEffect(() => {
+  // Auto-detect Senior / New Lawyer runs on blur (not on every keystroke) so
+  // partial dates like "0006-04-15" while typing the year don't briefly count
+  // as ancient and flip the category to Senior.
+  function autoApplyDiscountsFromBirthday() {
     if (isSeniorByBirthday(form.birthday) && form.category !== 'senior') {
       setForm(prev => ({ ...prev, category: 'senior' }));
     }
-  }, [form.birthday]); // eslint-disable-line react-hooks/exhaustive-deps
+  }
+  function autoApplyDiscountsFromBarYear() {
+    if (
+      isNewLawyerByBarYear(form.barAdmission) &&
+      !isSeniorByBirthday(form.birthday) &&
+      form.category !== 'newlawyer'
+    ) {
+      setForm(prev => ({ ...prev, category: 'newlawyer' }));
+    }
+  }
 
-  const senior = isSeniorByBirthday(form.birthday);
-  const age    = ageThisYear(form.birthday);
+  const senior    = isSeniorByBirthday(form.birthday);
+  const newLawyer = isNewLawyerByBarYear(form.barAdmission);
+  const age       = ageThisYear(form.birthday);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -72,6 +84,7 @@ export default function RegistrationForm() {
     if (chapter === 'Other' && !chapterOther.trim())
       return setError('Please enter your IBP Chapter name.');
     if (!category)                       return setError('Please select your registration type.');
+    if (category === 'pwd' && !pwdId)    return setError('Please upload a copy of your PWD ID to qualify for the PWD rate.');
     if (!proof)                          return setError('Please upload your proof of payment before submitting.');
     if (!agree)                          return setError('Please agree to the terms and conditions to proceed.');
 
@@ -83,6 +96,12 @@ export default function RegistrationForm() {
       try { proofDataUrl = await readFileAsDataURL(proof); }
       catch { /* ignore — registration still proceeds */ }
 
+      let pwdIdDataUrl = null;
+      if (pwdId) {
+        try { pwdIdDataUrl = await readFileAsDataURL(pwdId); }
+        catch { /* ignore — registration still proceeds */ }
+      }
+
       const ref = 'IBP-NL-' + Date.now().toString().slice(-7);
       const { chapterOther: _drop, ...rest } = form;
       const attendee = await api.createAttendee({
@@ -91,7 +110,10 @@ export default function RegistrationForm() {
         chapter:      finalChapter,
         proofName:    proof.name,
         proofType:    proof.type || '',
-        proofDataUrl
+        proofDataUrl,
+        pwdIdName:    pwdId?.name || '',
+        pwdIdType:    pwdId?.type || '',
+        pwdIdDataUrl,
       });
 
       const qrDataUrl = await generateQRDataURL(buildQrPayload(attendee), 256);
@@ -107,6 +129,7 @@ export default function RegistrationForm() {
     setSuccess(null);
     setForm(EMPTY);
     setProof(null);
+    setPwdId(null);
     setAgree(false);
     setError('');
   }
@@ -114,6 +137,14 @@ export default function RegistrationForm() {
   return (
     <>
       <form className="form-card" onSubmit={handleSubmit} noValidate>
+
+        <div className="mcle-notice">
+          <i className="ti ti-certificate" aria-hidden="true"></i>
+          <div>
+            <div className="mcle-heading">Inclusive of 6 MCLE Credit Units</div>
+            <div className="mcle-sub">Awarded from selected lectures or topics during the convention.</div>
+          </div>
+        </div>
 
         {/* PERSONAL */}
         <div className="section-gap">
@@ -140,8 +171,10 @@ export default function RegistrationForm() {
                 id="birthday"
                 type="date"
                 value={form.birthday}
+                min="1900-01-01"
                 max={TODAY_ISO}
                 onChange={e => update('birthday', e.target.value)}
+                onBlur={autoApplyDiscountsFromBirthday}
                 autoComplete="bday"
               />
               {age != null && age >= 0 && (
@@ -213,6 +246,7 @@ export default function RegistrationForm() {
                 max={new Date().getFullYear()}
                 value={form.barAdmission}
                 onChange={e => update('barAdmission', e.target.value)}
+                onBlur={autoApplyDiscountsFromBarYear}
                 placeholder="e.g. 2015"
               />
             </div>
@@ -221,7 +255,7 @@ export default function RegistrationForm() {
               <select id="category" value={form.category} onChange={e => update('category', e.target.value)}>
                 <option value="">— Select registration type —</option>
                 {REGISTRATION_TYPES.map(t => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
+                  <option key={t.value} value={t.value}>{t.label} — {t.fee}</option>
                 ))}
               </select>
               {senior && form.category === 'senior' && (
@@ -234,7 +268,32 @@ export default function RegistrationForm() {
                   You qualify for the Senior Citizen rate. Switch back if this was unintentional.
                 </small>
               )}
+              {!senior && newLawyer && form.category === 'newlawyer' && (
+                <small style={{ fontSize: 11.5, color: '#166534', marginTop: 2 }}>
+                  New Lawyer discount auto-applied (admitted to the bar this year).
+                </small>
+              )}
+              {!senior && newLawyer && form.category && form.category !== 'newlawyer' && (
+                <small style={{ fontSize: 11.5, color: '#b45309', marginTop: 2 }}>
+                  You qualify for the New Lawyer rate. Switch back if this was unintentional.
+                </small>
+              )}
+              {form.category === 'pwd' && (
+                <small style={{ fontSize: 11.5, color: '#6b5080', marginTop: 2 }}>
+                  A copy of your PWD ID is required to qualify for this rate — please upload it below.
+                </small>
+              )}
             </div>
+            {form.category === 'pwd' && (
+              <div className="field-group field-full">
+                <label>PWD ID <span className="req">*</span></label>
+                <UploadZone
+                  file={pwdId}
+                  onFile={(f, err) => { setPwdId(f); if (err) setError(err); }}
+                  onClear={() => setPwdId(null)}
+                />
+              </div>
+            )}
             <div className="field-group field-full">
               <label htmlFor="dietary">Dietary Requirements / Special Needs</label>
               <textarea id="dietary" value={form.dietary} onChange={e => update('dietary', e.target.value)} placeholder="e.g. vegetarian, halal, wheelchair access, etc. Leave blank if none."></textarea>

@@ -20,7 +20,7 @@ const AttendeeSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ['earlybird', 'regular', 'walkin', 'senior'],
+      enum: ['earlybird', 'regular', 'walkin', 'senior', 'pwd', 'newlawyer'],
       index: true
     },
     dietary:  { type: String, default: '' },
@@ -31,6 +31,11 @@ const AttendeeSchema = new mongoose.Schema(
     proofName:    { type: String, default: '' },
     proofType:    { type: String, default: '' },
     proofDataUrl: { type: String, default: null },
+
+    // PWD ID — required only when category === 'pwd'. Same base64 pattern.
+    pwdIdName:    { type: String, default: '' },
+    pwdIdType:    { type: String, default: '' },
+    pwdIdDataUrl: { type: String, default: null },
 
     registeredAt:        { type: Date, default: Date.now },
     paid:                { type: Boolean, default: false, index: true },

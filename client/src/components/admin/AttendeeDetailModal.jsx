@@ -29,6 +29,8 @@ export default function AttendeeDetailModal({
   if (a.certificateIssued) statusBits.push('Certificate issued');
 
   const proofIsImage = (a.proofType || '').startsWith('image/');
+  const pwdIsImage   = (a.pwdIdType || '').startsWith('image/');
+  const hasPwdId     = a.category === 'pwd' || a.pwdIdName || a.pwdIdDataUrl;
 
   return (
     <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }} role="dialog" aria-modal="true">
@@ -81,6 +83,23 @@ export default function AttendeeDetailModal({
             </div>
           )}
         </div>
+
+        {hasPwdId && (
+          <div className="detail-proof">
+            <div className="proof-name">
+              PWD ID —{' '}
+              {a.pwdIdDataUrl
+                ? (a.pwdIdName || 'uploaded')
+                : (a.pwdIdName ? `${a.pwdIdName} (file not stored)` : 'not uploaded')}
+            </div>
+            {a.pwdIdDataUrl && pwdIsImage && <img src={a.pwdIdDataUrl} alt="PWD ID" />}
+            {a.pwdIdDataUrl && (
+              <div>
+                <a href={a.pwdIdDataUrl} download={a.pwdIdName || 'pwd-id'}>Download attached file</a>
+              </div>
+            )}
+          </div>
+        )}
 
         <div className="detail-actions">
           <button className="ghost" onClick={() => onTogglePaid(a.ref)}>

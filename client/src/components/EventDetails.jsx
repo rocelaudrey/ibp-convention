@@ -16,10 +16,9 @@ export default function EventDetails() {
   return (
     <div className="event-strip">
       <div className="event-details-card">
-        <Item icon="ti-calendar-event" label="Event Date"        value={EVENT_INFO.date} />
-        <Item icon="ti-map-pin"        label="Venue"             value={EVENT_INFO.venue} />
-        <Item icon="ti-clock"          label="Registration Open" value={EVENT_INFO.regOpen} />
-        <Item icon="ti-mail"           label="Inquiries"         value={EVENT_INFO.email} />
+        <Item icon="ti-calendar-event" label="Event Date" value={EVENT_INFO.date} />
+        <Item icon="ti-map-pin"        label="Venue"      value={EVENT_INFO.venue} />
+        <Item icon="ti-mail"           label="Inquiries"  value={EVENT_INFO.email} />
       </div>
     </div>
   );

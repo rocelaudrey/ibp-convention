@@ -39,6 +39,7 @@ export async function createAttendee(data) {
     rollnum: '', chapter: '', barAdmission: '', category: '',
     dietary: '',
     proofName: '', proofType: '', proofDataUrl: null,
+    pwdIdName: '', pwdIdType: '', pwdIdDataUrl: null,
     registeredAt: new Date().toISOString(),
     paid: false,
     checkedIn: false, checkedInAt: null,
@@ -51,10 +52,11 @@ export async function createAttendee(data) {
   try {
     write(list);
   } catch (e) {
-    // Quota — try again without the proof image
+    // Quota — drop the binary blobs and retry.
     attendee.proofDataUrl = null;
+    attendee.pwdIdDataUrl = null;
     write(list);
-    console.warn('Saved without proof image due to storage quota.');
+    console.warn('Saved without proof / PWD ID images due to storage quota.');
   }
   return attendee;
 }

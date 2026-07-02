@@ -9,6 +9,7 @@ export default function AdminHeader({ user, isSuperAdmin, onLogout }) {
   const { pathname } = useLocation();
   const onDashboard = pathname === '/admin';
   const onUsers     = pathname.startsWith('/admin/users');
+  const onReports   = pathname.startsWith('/admin/reports');
 
   return (
     <header className="admin-header">
@@ -31,6 +32,11 @@ export default function AdminHeader({ user, isSuperAdmin, onLogout }) {
         {!onDashboard && (
           <Link className="admin-btn" to="/admin">
             <i className="ti ti-layout-dashboard" aria-hidden="true"></i> Dashboard
+          </Link>
+        )}
+        {!onReports && (
+          <Link className="admin-btn" to="/admin/reports">
+            <i className="ti ti-report-analytics" aria-hidden="true"></i> Reports
           </Link>
         )}
         {isSuperAdmin && !onUsers && (

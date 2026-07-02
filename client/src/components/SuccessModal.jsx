@@ -1,7 +1,8 @@
+import { createPortal } from 'react-dom';
 import { downloadDataURL } from '../utils/qr.js';
 
 export default function SuccessModal({ attendee, qrDataUrl, onClose }) {
-  return (
+  return createPortal(
     <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }} role="dialog" aria-modal="true">
       <div className="modal-card">
         <div className="modal-icon"><i className="ti ti-check" aria-hidden="true"></i></div>
@@ -29,6 +30,7 @@ export default function SuccessModal({ attendee, qrDataUrl, onClose }) {
           <button type="button" className="modal-close-btn" onClick={onClose}>Done</button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
