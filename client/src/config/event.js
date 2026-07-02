@@ -5,8 +5,7 @@
 export const EVENT_INFO = {
   title: "IBP North Luzon Regional Convention",
   region: "North Luzon Region",
-  theme: "IBP: Empowering Justice, Embracing Diversity",
-  themeIl: "IBP: Panangpasiglat iti Hustisya, Panangipateg iti Dadduma",
+  theme: "Empowering Justice, Embracing Diversity: Amianan Standing in Solidarity, Serving with Inclusivity",
   date: "October 15-17, 2026",
   venue: "CMP Convention Center, Capitol Compound, Bayombong, Nueva Vizcaya",
   email: "contact@email.com",

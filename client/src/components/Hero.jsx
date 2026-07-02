@@ -18,7 +18,6 @@ export default function Hero() {
       <p className="hero-subtitle">IBP {EVENT_INFO.region} · Official Registration</p>
       <div className="hero-theme-wrap">
         <span className="hero-theme-en">"{EVENT_INFO.theme}"</span>
-        <span className="hero-theme-il">"{EVENT_INFO.themeIl}"</span>
       </div>
     </header>
   );

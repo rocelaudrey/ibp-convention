@@ -80,11 +80,7 @@ body {
   border-bottom: 1px solid rgba(175,125,255,0.28);
   padding: 0.5rem 1.75rem;
 }
-.hero-theme-en { font-style: italic; font-size: 16px; color: rgba(235,215,255,0.92); }
-.hero-theme-il {
-  display: block; font-style: italic; font-size: 14px;
-  color: rgba(190,155,240,0.7); margin-top: 0.25rem;
-}
+.hero-theme-en { font-style: italic; font-size: 16px; color: rgba(235,215,255,0.92); line-height: 1.45; }
 
 /* ============================================================
    EVENT DETAILS STRIP
