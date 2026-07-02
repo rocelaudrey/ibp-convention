@@ -32,9 +32,9 @@ export default function AdminPage() {
     return () => document.removeEventListener('keydown', onKey);
   }, []);
 
-  if (!isApiMode) return <ServerRequired />;
-  if (!isAuthed) return <AdminLogin onLogin={login} />;
-
+  // NOTE: keep all hooks above the early-return branches below. React's
+  // hook order must be stable across renders — moving a hook past a
+  // conditional return trips error #310 in the production build.
   const chapters = useMemo(
     () => [...new Set(attendees.map(a => a.chapter).filter(Boolean))].sort(),
     [attendees]
@@ -57,6 +57,9 @@ export default function AdminPage() {
     if (status === 'cert')     r = r.filter(a => a.certificateIssued);
     return r;
   }, [attendees, search, chapter, status]);
+
+  if (!isApiMode) return <ServerRequired />;
+  if (!isAuthed) return <AdminLogin onLogin={login} />;
 
   const openAttendee = openRef ? attendees.find(a => a.ref === openRef) : null;
 
