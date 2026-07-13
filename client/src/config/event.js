@@ -9,7 +9,7 @@ export const EVENT_INFO = {
     "Empowering Justice, Embracing Diversity: Amianan Standing in Solidarity, Serving with Inclusivity",
   date: "October 15-17, 2026",
   venue: "CMP Convention Center, Capitol Compound, Bayombong, Nueva Vizcaya",
-  email: "contact@email.com",
+  email: "ibpnlrc2026admin@gmail.com",
 };
 
 // ── Venue + nearby hotels ─────────────────────────────────────
