@@ -3,9 +3,10 @@
 // ──────────────────────────────────────────────────────────────
 
 export const EVENT_INFO = {
-  title: "IBP North Luzon Regional Convention",
-  region: "North Luzon Region",
-  theme: "Empowering Justice, Embracing Diversity: Amianan Standing in Solidarity, Serving with Inclusivity",
+  title: "IBP Northern Luzon Regional Convention",
+  region: "Northern Luzon Region",
+  theme:
+    "Empowering Justice, Embracing Diversity: Amianan Standing in Solidarity, Serving with Inclusivity",
   date: "October 15-17, 2026",
   venue: "CMP Convention Center, Capitol Compound, Bayombong, Nueva Vizcaya",
   email: "contact@email.com",
@@ -74,16 +75,21 @@ export const REGISTRATION_TYPES = [
   {
     value: "earlybird",
     label: "Early Bird",
-    fee: "₱ 6,500",
+    fee: "₱ 6,000",
     badge: "earlybird",
   },
-  { value: "regular",   label: "Regular",                 fee: "₱ 7,500", badge: "regular" },
-  { value: "senior",    label: "Senior Citizen",          fee: "₱ 6,500", badge: "senior" },
-  { value: "pwd",       label: "PWD",                     fee: "₱ 6,500", badge: "pwd" },
-  { value: "newlawyer", label: "Lawyer Admitted in 2026", fee: "₱ 6,500", badge: "newlawyer" },
+  { value: "regular", label: "Regular", fee: "₱ 7,000", badge: "regular" },
+  { value: "senior", label: "Senior Citizen", fee: "₱ 6,000", badge: "senior" },
+  { value: "pwd", label: "PWD", fee: "₱ 6,000", badge: "pwd" },
+  {
+    value: "newlawyer",
+    label: "Lawyer Admitted in 2026",
+    fee: "₱ 6,000",
+    badge: "newlawyer",
+  },
 ];
 
-// Categories that qualify as the "Special" ₱6,500 rate — used to show a
+// Categories that qualify as the "Special" ₱6,000 rate — used to show a
 // single message on the confirmation and to group them in reports.
 export const SPECIAL_RATE_CATEGORIES = ["senior", "pwd", "newlawyer"];
 

@@ -233,19 +233,31 @@ body {
   padding: 1.25rem;
   margin-bottom: 1.5rem;
 }
-.payment-inner { display: grid; grid-template-columns: 128px 1fr; gap: 1.25rem; align-items: start; }
+.payment-inner { display: grid; grid-template-columns: 180px 1fr; gap: 1.25rem; align-items: start; }
 .qr-block {
-  width: 128px; height: 128px;
-  background: #2a1a40; border-radius: 10px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  flex-shrink: 0; position: relative; overflow: hidden;
+  width: 180px;
+  aspect-ratio: 4 / 5;
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e0d5f2;
+  padding: 8px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+  flex-shrink: 0; overflow: hidden;
 }
-.qr-block::before {
-  content: ''; position: absolute; inset: 7px;
-  border: 2px solid rgba(180,130,255,0.45); border-radius: 4px;
+.qr-block img {
+  width: 100%; height: 100%;
+  object-fit: contain;
+  border-radius: 6px;
 }
-.qr-block i { font-size: 42px; color: rgba(180,130,255,0.9); display: block; margin-bottom: 4px; }
-.qr-block span { font-size: 9px; color: rgba(200,170,255,0.55); letter-spacing: 1px; text-transform: uppercase; text-align: center; line-height: 1.4; }
+.qr-block .qr-caption {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #7c3aed;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3;
+}
 .payment-info h4 { font-size: 13px; font-weight: 600; color: #5a2c90; margin-bottom: 0.6rem; }
 .fee-row {
   display: flex; justify-content: space-between; align-items: center;
@@ -897,7 +909,7 @@ table.admin-table .row-actions { display: flex; gap: 4px; flex-wrap: wrap; }
   .fields-grid { grid-template-columns: 1fr; }
   .field-full { grid-column: 1; }
   .payment-inner { grid-template-columns: 1fr; }
-  .qr-block { width: 100%; height: 110px; }
+  .qr-block { width: 200px; max-width: 100%; margin: 0 auto; }
   .event-details-card { grid-template-columns: 1fr 1fr; }
   .detail-grid { grid-template-columns: 1fr; }
   .admin-header { padding: 0.85rem 1rem; }

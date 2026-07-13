@@ -5,9 +5,9 @@ export default function PaymentBox() {
     <div className="payment-box">
       <div className="payment-inner">
 
-        <div className="qr-block" aria-label="QR Code placeholder for payment">
-          <i className="ti ti-qrcode" aria-hidden="true"></i>
-          <span>QR Code<br />for Payment</span>
+        <div className="qr-block" aria-label="BPI InstaPay QR code for payment">
+          <img src="/bpi-instapay-qr.jpg" alt="BPI InstaPay QR — IBP NV" />
+          <span className="qr-caption">BPI InstaPay · IBP NV</span>
         </div>
 
         <div className="payment-info">
@@ -19,8 +19,8 @@ export default function PaymentBox() {
             </div>
           ))}
           <p className="payment-note">
-            Scan the QR code using GCash, Maya, or any supported e-wallet.
-            Use your full name as the payment reference/note.
+            Scan the BPI InstaPay QR using any supported bank or e-wallet app.
+            Use your full name as the payment reference/note. Transfer fees may apply.
           </p>
         </div>
 
