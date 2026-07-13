@@ -18,7 +18,7 @@ import AttendeeDetailModal from '../components/admin/AttendeeDetailModal.jsx';
 
 export default function AdminPage() {
   const { isAuthed, user, isSuperAdmin, login, logout } = useAdminAuth();
-  const { attendees, refresh, create, update, remove } = useAttendees({ enabled: isAuthed });
+  const { attendees, update, remove } = useAttendees({ enabled: isAuthed });
 
   const [search,  setSearch]  = useState('');
   const [chapter, setChapter] = useState('');
@@ -129,23 +129,6 @@ export default function AdminPage() {
     URL.revokeObjectURL(url);
   }
 
-  async function seedDemo() {
-    if (!confirm('Add 3 sample registrants? (Existing data is kept.)')) return;
-    const samples = [
-      { fname:'Maria',    lname:'Santos', birthday:'1985-04-12', chapter:'Cagayan',       category:'earlybird', barAdmission:'2012', email:'maria.santos@example.com',    phone:'+63 917 111 1111', rollnum:'45678' },
-      { fname:'Jose',     lname:'Reyes',  birthday:'1978-09-30', chapter:'Nueva Vizcaya', category:'regular',   barAdmission:'2005', email:'jose.reyes@example.com',      phone:'+63 917 222 2222', rollnum:'34567' },
-      { fname:'Liwayway', lname:'Aquino', birthday:'1962-01-05', chapter:'Isabela',       category:'senior',    barAdmission:'1990', email:'liwayway.aquino@example.com', phone:'+63 917 333 3333', rollnum:'23456' }
-    ];
-    for (let i = 0; i < samples.length; i++) {
-      const s = samples[i];
-      await create({
-        ref: 'IBP-NL-' + (Date.now() + i).toString().slice(-7),
-        ...s,
-        paid: i !== 0
-      });
-    }
-  }
-
   return (
     <div className="admin-view">
       <AdminHeader user={user} isSuperAdmin={isSuperAdmin} onLogout={logout} />
@@ -156,7 +139,6 @@ export default function AdminPage() {
         chapter={chapter} setChapter={setChapter} chapters={chapters}
         status={status}   setStatus={setStatus}
         onExportCSV={exportCSV}
-        onSeedDemo={seedDemo}
       />
       <div className="admin-table-wrap">
         <div className="admin-table-card">

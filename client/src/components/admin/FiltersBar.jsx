@@ -2,7 +2,7 @@ export default function FiltersBar({
   search, setSearch,
   chapter, setChapter, chapters,
   status, setStatus,
-  onExportCSV, onSeedDemo
+  onExportCSV
 }) {
   return (
     <div className="admin-filters">
@@ -26,9 +26,6 @@ export default function FiltersBar({
       <div className="filters-right">
         <button className="ghost" onClick={onExportCSV}>
           <i className="ti ti-download" aria-hidden="true"></i> Export CSV
-        </button>
-        <button className="ghost" onClick={onSeedDemo} title="Adds 3 sample attendees">
-          <i className="ti ti-flask" aria-hidden="true"></i> Seed Demo
         </button>
       </div>
     </div>
