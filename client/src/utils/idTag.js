@@ -49,7 +49,7 @@ export async function drawIdTagOnDoc(doc, attendee) {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(11);
   doc.setTextColor(255, 255, 255);
-  doc.text('IBP NORTH LUZON', W / 2, 0.28, { align: 'center' });
+  doc.text('IBP NORTHERN LUZON', W / 2, 0.28, { align: 'center' });
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7);

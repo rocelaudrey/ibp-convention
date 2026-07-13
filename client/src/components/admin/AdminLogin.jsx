@@ -22,7 +22,7 @@ export default function AdminLogin({ onLogin }) {
       <form className="admin-login-card" onSubmit={handleSubmit}>
         <div className="modal-icon"><i className="ti ti-shield-lock" aria-hidden="true"></i></div>
         <h2>Admin Portal</h2>
-        <p className="sub">IBP North Luzon Convention · Sign in to continue</p>
+        <p className="sub">IBP Northern Luzon Convention · Sign in to continue</p>
         <input
           type="text"
           placeholder="Username"

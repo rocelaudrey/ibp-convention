@@ -325,7 +325,7 @@ export default function RegistrationForm() {
           <input id="agree" type="checkbox" checked={agree} onChange={e => setAgree(e.target.checked)} />
           <label htmlFor="agree">
             I certify that all information provided is accurate and complete. I agree to the
-            {' '}<a href="#">terms and conditions</a> of the IBP North Luzon Regional Convention.
+            {' '}<a href="#">terms and conditions</a> of the IBP Northern Luzon Regional Convention.
           </label>
         </div>
 

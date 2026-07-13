@@ -87,8 +87,8 @@ export function drawCertificateOnDoc(doc, attendee) {
 
   doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
   doc.setTextColor(140, 110, 180);
-  doc.text('IBP North Luzon Region', 75, sigY + 11, { align: 'center' });
-  doc.text('IBP North Luzon Region', W - 75, sigY + 11, { align: 'center' });
+  doc.text('IBP Northern Luzon Region', 75, sigY + 11, { align: 'center' });
+  doc.text('IBP Northern Luzon Region', W - 75, sigY + 11, { align: 'center' });
 
   // Ref
   doc.setFontSize(8); doc.setTextColor(155, 126, 212);

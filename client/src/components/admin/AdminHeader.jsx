@@ -19,7 +19,7 @@ export default function AdminHeader({ user, isSuperAdmin, onLogout }) {
         </div>
         <div>
           <h1>Convention Admin</h1>
-          <div className="ah-sub">IBP North Luzon</div>
+          <div className="ah-sub">IBP Northern Luzon</div>
         </div>
       </div>
       <div className="ah-right">

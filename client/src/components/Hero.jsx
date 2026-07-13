@@ -14,7 +14,7 @@ export default function Hero() {
         />
       </div>
       <p className="hero-eyebrow">Integrated Bar of the Philippines</p>
-      <h1 className="hero-title">North Luzon Regional Convention</h1>
+      <h1 className="hero-title">Northern Luzon Regional Convention</h1>
       <p className="hero-subtitle">IBP {EVENT_INFO.region} · Official Registration</p>
       <div className="hero-theme-wrap">
         <span className="hero-theme-en">"{EVENT_INFO.theme}"</span>
