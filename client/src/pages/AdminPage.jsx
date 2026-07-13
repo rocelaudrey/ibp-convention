@@ -4,8 +4,8 @@ import { useAttendees } from '../hooks/useAttendees.js';
 import { CATEGORY_LABELS } from '../config/event.js';
 import { isApiMode } from '../services/api.js';
 import { generateQRDataURL, buildQrPayload, downloadDataURL } from '../utils/qr.js';
-import { generateCertificatePDF } from '../utils/certificate.js';
-import { generateIdTagPDF } from '../utils/idTag.js';
+import { generateCertificatePDF, generateBulkCertificatesPDF } from '../utils/certificate.js';
+import { generateIdTagPDF, generateBulkIdTagsPDF } from '../utils/idTag.js';
 
 import AdminLogin from '../components/admin/AdminLogin.jsx';
 import AdminHeader from '../components/admin/AdminHeader.jsx';
@@ -129,6 +129,31 @@ export default function AdminPage() {
     URL.revokeObjectURL(url);
   }
 
+  // Bulk print name tags for whoever is currently filtered on-screen.
+  async function bulkPrintTags() {
+    if (rows.length === 0) { alert('No attendees in the current view.'); return; }
+    const ok = confirm(`Generate ${rows.length} name tag${rows.length === 1 ? '' : 's'} into a single PDF?`);
+    if (!ok) return;
+    await generateBulkIdTagsPDF(rows);
+  }
+
+  // Bulk issue certificates: builds one multi-page PDF, then marks each
+  // as certificateIssued = true (only the ones that weren't already).
+  async function bulkIssueCerts() {
+    if (rows.length === 0) { alert('No attendees in the current view.'); return; }
+    const toMark = rows.filter(a => !a.certificateIssued);
+    const alreadyIssued = rows.length - toMark.length;
+    const summary = alreadyIssued
+      ? `Generate ${rows.length} certificate${rows.length === 1 ? '' : 's'} into a single PDF and mark ${toMark.length} as issued? ${alreadyIssued} already marked issued and will be re-included in the PDF.`
+      : `Generate ${rows.length} certificate${rows.length === 1 ? '' : 's'} into a single PDF and mark them as issued?`;
+    if (!confirm(summary)) return;
+    generateBulkCertificatesPDF(rows);
+    const now = new Date().toISOString();
+    for (const a of toMark) {
+      await update(a.ref, { certificateIssued: true, certificateIssuedAt: now });
+    }
+  }
+
   return (
     <div className="admin-view">
       <AdminHeader user={user} isSuperAdmin={isSuperAdmin} onLogout={logout} />
@@ -139,6 +164,9 @@ export default function AdminPage() {
         chapter={chapter} setChapter={setChapter} chapters={chapters}
         status={status}   setStatus={setStatus}
         onExportCSV={exportCSV}
+        onBulkPrintTags={bulkPrintTags}
+        onBulkIssueCerts={bulkIssueCerts}
+        bulkCount={rows.length}
       />
       <div className="admin-table-wrap">
         <div className="admin-table-card">

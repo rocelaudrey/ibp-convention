@@ -1,8 +1,11 @@
 import jsPDF from 'jspdf';
 import { EVENT_INFO } from '../config/event.js';
 
-export function generateCertificatePDF(attendee) {
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+/**
+ * Draws one certificate on the CURRENT page of the given jsPDF instance.
+ * Caller creates + saves the doc; used by both single and bulk generators.
+ */
+export function drawCertificateOnDoc(doc, attendee) {
   const W = doc.internal.pageSize.getWidth();   // 297
   const H = doc.internal.pageSize.getHeight();  // 210
 
@@ -42,15 +45,16 @@ export function generateCertificatePDF(attendee) {
   doc.setTextColor(90, 64, 112);
   doc.text('This is to certify that', W / 2, 78, { align: 'center' });
 
-  // Recipient name
-  const fullName = [attendee.fname, attendee.mname, attendee.lname].filter(Boolean).join(' ');
+  // Recipient name — prefixed with "Atty." on the printed certificate.
+  const bareName = [attendee.fname, attendee.mname, attendee.lname].filter(Boolean).join(' ');
+  const displayName = `Atty. ${bareName}`;
   doc.setFont('times', 'bolditalic'); doc.setFontSize(34);
   doc.setTextColor(76, 29, 149);
-  doc.text(fullName, W / 2, 100, { align: 'center' });
+  doc.text(displayName, W / 2, 100, { align: 'center' });
 
   // Underline
   doc.setDrawColor(180, 130, 255); doc.setLineWidth(0.4);
-  const nameWidth = doc.getTextWidth(fullName);
+  const nameWidth = doc.getTextWidth(displayName);
   doc.line(W / 2 - Math.max(nameWidth / 2, 50), 104, W / 2 + Math.max(nameWidth / 2, 50), 104);
 
   // Body
@@ -90,6 +94,27 @@ export function generateCertificatePDF(attendee) {
   doc.setFontSize(8); doc.setTextColor(155, 126, 212);
   doc.text(`Ref: ${attendee.ref}`, W / 2, H - 14, { align: 'center' });
 
-  const safeName = fullName.replace(/[^a-z0-9]+/gi, '_');
+  return doc;
+}
+
+/** Single-attendee certificate — creates a doc, draws, saves. */
+export function generateCertificatePDF(attendee) {
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  drawCertificateOnDoc(doc, attendee);
+  const bareName = [attendee.fname, attendee.mname, attendee.lname].filter(Boolean).join(' ');
+  const safeName = bareName.replace(/[^a-z0-9]+/gi, '_');
   doc.save(`Certificate_${safeName}_${attendee.ref}.pdf`);
+}
+
+/** Bulk certificates — one landscape A4 page per attendee. */
+export function generateBulkCertificatesPDF(attendees, { onProgress } = {}) {
+  if (!attendees.length) return;
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+  for (let i = 0; i < attendees.length; i++) {
+    if (i > 0) doc.addPage('a4', 'landscape');
+    drawCertificateOnDoc(doc, attendees[i]);
+    if (onProgress) onProgress(i + 1, attendees.length);
+  }
+  const stamp = new Date().toISOString().slice(0, 10);
+  doc.save(`IBP-NL-Certificates_${stamp}_${attendees.length}pcs.pdf`);
 }

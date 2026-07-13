@@ -28,11 +28,16 @@ function fitFontSize(doc, text, maxWidth, startSize, minSize = 8) {
   return size;
 }
 
-export async function generateIdTagPDF(attendee) {
-  // 3" wide × 4" tall, portrait
-  const W = 3, H = 4;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'in', format: [W, H] });
+// Card dimensions in inches — reused for bulk and single generation.
+const ID_W = 3, ID_H = 4;
 
+/**
+ * Draws one ID tag on the CURRENT page of the given jsPDF instance.
+ * The caller owns the doc (create, addPage, save) so this can be
+ * composed into a multi-page bulk PDF.
+ */
+export async function drawIdTagOnDoc(doc, attendee) {
+  const W = ID_W, H = ID_H;
   // ─── White background ─────────────────────────────────────
   doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, W, H, 'F');
@@ -72,12 +77,13 @@ export async function generateIdTagPDF(attendee) {
   doc.setLineWidth(0.01);
   doc.rect(qrX - 0.04, qrY - 0.04, qrSize + 0.08, qrSize + 0.08);
 
-  // ─── Name (auto-fit) ──────────────────────────────────────
-  const fullName = [attendee.fname, attendee.mname, attendee.lname].filter(Boolean).join(' ');
+  // ─── Name (auto-fit) — prefixed with "Atty." on the printed tag ───
+  const bareName = [attendee.fname, attendee.mname, attendee.lname].filter(Boolean).join(' ');
+  const displayName = `Atty. ${bareName}`;
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(42, 26, 64);
-  fitFontSize(doc, fullName, W - 0.3, 15, 9);
-  doc.text(fullName, W / 2, 2.55, { align: 'center' });
+  fitFontSize(doc, displayName, W - 0.3, 15, 9);
+  doc.text(displayName, W / 2, 2.55, { align: 'center' });
 
   // ─── Ref number (monospace) ───────────────────────────────
   doc.setFont('courier', 'normal');
@@ -128,7 +134,27 @@ export async function generateIdTagPDF(attendee) {
   doc.setLineWidth(0.02);
   doc.rect(0.04, 0.04, W - 0.08, H - 0.08);
 
-  // ─── Save ─────────────────────────────────────────────────
-  const safeName = fullName.replace(/[^a-z0-9]+/gi, '_');
+  return doc;
+}
+
+/** Single-attendee ID tag — creates a doc, draws, saves. */
+export async function generateIdTagPDF(attendee) {
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'in', format: [ID_W, ID_H] });
+  await drawIdTagOnDoc(doc, attendee);
+  const bareName = [attendee.fname, attendee.mname, attendee.lname].filter(Boolean).join(' ');
+  const safeName = bareName.replace(/[^a-z0-9]+/gi, '_');
   doc.save(`IDTag_${safeName}_${attendee.ref}.pdf`);
+}
+
+/** Bulk ID tags — one 3×4 page per attendee, all saved as a single PDF. */
+export async function generateBulkIdTagsPDF(attendees, { onProgress } = {}) {
+  if (!attendees.length) return;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'in', format: [ID_W, ID_H] });
+  for (let i = 0; i < attendees.length; i++) {
+    if (i > 0) doc.addPage([ID_W, ID_H], 'portrait');
+    await drawIdTagOnDoc(doc, attendees[i]);
+    if (onProgress) onProgress(i + 1, attendees.length);
+  }
+  const stamp = new Date().toISOString().slice(0, 10);
+  doc.save(`IBP-NL-NameTags_${stamp}_${attendees.length}pcs.pdf`);
 }

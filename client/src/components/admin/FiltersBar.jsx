@@ -2,8 +2,12 @@ export default function FiltersBar({
   search, setSearch,
   chapter, setChapter, chapters,
   status, setStatus,
-  onExportCSV
+  onExportCSV,
+  onBulkPrintTags,
+  onBulkIssueCerts,
+  bulkCount = 0,
 }) {
+  const bulkLabel = bulkCount > 0 ? ` (${bulkCount})` : '';
   return (
     <div className="admin-filters">
       <input
@@ -27,6 +31,26 @@ export default function FiltersBar({
         <button className="ghost" onClick={onExportCSV}>
           <i className="ti ti-download" aria-hidden="true"></i> Export CSV
         </button>
+        {onBulkPrintTags && (
+          <button
+            className="ghost"
+            onClick={onBulkPrintTags}
+            disabled={bulkCount === 0}
+            title={bulkCount === 0 ? 'No attendees in the current view' : 'Prints one PDF with all filtered name tags'}
+          >
+            <i className="ti ti-id" aria-hidden="true"></i> Print name tags{bulkLabel}
+          </button>
+        )}
+        {onBulkIssueCerts && (
+          <button
+            className="ghost"
+            onClick={onBulkIssueCerts}
+            disabled={bulkCount === 0}
+            title={bulkCount === 0 ? 'No attendees in the current view' : 'Generates a PDF and marks each as certificate issued'}
+          >
+            <i className="ti ti-certificate" aria-hidden="true"></i> Issue certificates{bulkLabel}
+          </button>
+        )}
       </div>
     </div>
   );
