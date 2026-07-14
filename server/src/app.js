@@ -7,12 +7,20 @@ import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
 
-const origins = (process.env.CORS_ORIGINS || '')
-  .split(',').map(s => s.trim()).filter(Boolean);
+// Allowed origins, normalized (trim + drop any trailing slash) so a value like
+// "https://site.app/" still matches the browser's Origin "https://site.app".
+const stripSlash = (s) => s.replace(/\/+$/, '');
+const allowedOrigins = (process.env.CORS_ORIGINS || '')
+  .split(',').map((s) => stripSlash(s.trim())).filter(Boolean);
 
 app.use(cors({
-  origin: origins.length === 0 ? true : origins,
-  credentials: false
+  origin(origin, cb) {
+    // No allowlist configured → allow all. Requests without an Origin header
+    // (curl, health checks, server-to-server) are always allowed.
+    if (allowedOrigins.length === 0 || !origin) return cb(null, true);
+    cb(null, allowedOrigins.includes(stripSlash(origin)));
+  },
+  credentials: false,
 }));
 
 // Increase limit so base64 proof images fit.
