@@ -15,6 +15,7 @@ function fmtDate(yyyyMmDd) {
 
 export default function AttendeeDetailModal({
   attendee,
+  loadingFull = false,
   onClose,
   onTogglePaid, onToggleCheckIn, onIssueCert, onDownloadQR, onPrintIdTag, onDelete
 }) {
@@ -74,7 +75,9 @@ export default function AttendeeDetailModal({
           <div className="proof-name">
             {a.proofDataUrl
               ? (a.proofName || 'Proof of payment')
-              : (a.proofName ? `${a.proofName} (file not stored)` : 'No proof uploaded')}
+              : (loadingFull && a.proofName)
+                ? `${a.proofName} — loading attachment…`
+                : (a.proofName ? `${a.proofName} (file not stored)` : 'No proof uploaded')}
           </div>
           {a.proofDataUrl && proofIsImage && <img src={a.proofDataUrl} alt="Proof of payment" />}
           {a.proofDataUrl && (
@@ -90,7 +93,9 @@ export default function AttendeeDetailModal({
               PWD ID —{' '}
               {a.pwdIdDataUrl
                 ? (a.pwdIdName || 'uploaded')
-                : (a.pwdIdName ? `${a.pwdIdName} (file not stored)` : 'not uploaded')}
+                : (loadingFull && a.pwdIdName)
+                  ? `${a.pwdIdName} — loading attachment…`
+                  : (a.pwdIdName ? `${a.pwdIdName} (file not stored)` : 'not uploaded')}
             </div>
             {a.pwdIdDataUrl && pwdIsImage && <img src={a.pwdIdDataUrl} alt="PWD ID" />}
             {a.pwdIdDataUrl && (

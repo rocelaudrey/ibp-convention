@@ -20,9 +20,15 @@ router.post('/', async (req, res, next) => {
 });
 
 // ─── Admin: list ─────────────────────────────────────────────
+// Excludes the heavy base64 image fields (proof of payment, PWD ID) so the
+// table loads fast — a single proof image can be several MB. The full record,
+// including images, is fetched per-attendee via GET /:ref when the detail
+// modal opens.
 router.get('/', requireAdmin, async (req, res, next) => {
   try {
-    const list = await Attendee.find().sort({ registeredAt: -1 });
+    const list = await Attendee.find()
+      .select('-proofDataUrl -pwdIdDataUrl')
+      .sort({ registeredAt: -1 });
     res.json(list);
   } catch (err) {
     next(err);

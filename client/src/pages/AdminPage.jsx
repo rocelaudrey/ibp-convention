@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAdminAuth } from '../hooks/useAdminAuth.js';
 import { useAttendees } from '../hooks/useAttendees.js';
 import { CATEGORY_LABELS } from '../config/event.js';
-import { isApiMode } from '../services/api.js';
+import { isApiMode, findAttendee } from '../services/api.js';
 import { generateQRDataURL, buildQrPayload, downloadDataURL } from '../utils/qr.js';
 import { generateCertificatePDF, generateBulkCertificatesPDF } from '../utils/certificate.js';
 import { generateIdTagPDF, generateBulkIdTagsPDF } from '../utils/idTag.js';
@@ -24,6 +24,9 @@ export default function AdminPage() {
   const [chapter, setChapter] = useState('');
   const [status,  setStatus]  = useState('');
   const [openRef, setOpenRef] = useState(null);
+  // The list omits heavy image fields for speed; fetch the full record
+  // (proof + PWD ID) when a detail modal opens.
+  const [openFull, setOpenFull] = useState(null);
 
   // Escape closes the detail modal
   useEffect(() => {
@@ -31,6 +34,16 @@ export default function AdminPage() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, []);
+
+  // Fetch the full record (with proof + PWD ID images) when a row is opened.
+  useEffect(() => {
+    if (!openRef) { setOpenFull(null); return; }
+    let cancelled = false;
+    findAttendee(openRef).then((full) => {
+      if (!cancelled && full) setOpenFull(full);
+    });
+    return () => { cancelled = true; };
+  }, [openRef]);
 
   // NOTE: keep all hooks above the early-return branches below. React's
   // hook order must be stable across renders — moving a hook past a
@@ -61,7 +74,17 @@ export default function AdminPage() {
   if (!isApiMode) return <ServerRequired />;
   if (!isAuthed) return <AdminLogin onLogin={login} />;
 
-  const openAttendee = openRef ? attendees.find(a => a.ref === openRef) : null;
+  // Base the modal on the fresh list row (keeps paid/check-in status current
+  // after edits) and overlay the base64 images from the full record once it loads.
+  const openListRow = openRef ? attendees.find(a => a.ref === openRef) : null;
+  const openAttendee = openListRow
+    ? {
+        ...openListRow,
+        ...(openFull && openFull.ref === openRef
+          ? { proofDataUrl: openFull.proofDataUrl, pwdIdDataUrl: openFull.pwdIdDataUrl }
+          : {}),
+      }
+    : null;
 
   // ─── actions ─────────────────────────────────────────────────
   async function togglePaid(ref) {
@@ -187,6 +210,7 @@ export default function AdminPage() {
       {openAttendee && (
         <AttendeeDetailModal
           attendee={openAttendee}
+          loadingFull={!!openRef && !(openFull && openFull.ref === openRef)}
           onClose={() => setOpenRef(null)}
           onTogglePaid={togglePaid}
           onToggleCheckIn={toggleCheckIn}
