@@ -83,6 +83,67 @@ body {
 .hero-theme-en { font-style: italic; font-size: 16px; color: rgba(235,215,255,0.92); line-height: 1.45; }
 
 /* ============================================================
+   EARLY BIRD COUNTDOWN
+============================================================ */
+.eb-countdown {
+  position: relative;
+  z-index: 1;
+  width: 70vw;
+  max-width: 1100px;
+  min-width: 320px;
+  margin: 0 auto 1.5rem;
+  padding: 0 1.25rem;
+}
+.eb-countdown-inner {
+  background: linear-gradient(135deg, rgba(124,58,237,0.20), rgba(76,29,149,0.14));
+  border: 1px solid rgba(180,130,255,0.32);
+  border-radius: 16px;
+  padding: 1.15rem 1.25rem 1.25rem;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+}
+.eb-countdown-head {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: rgba(215,185,255,0.9); font-weight: 600;
+  margin-bottom: 0.85rem;
+}
+.eb-countdown-head i { font-size: 19px; color: #c4a3ff; }
+.eb-timer { display: flex; align-items: flex-start; justify-content: center; gap: 10px; }
+.eb-unit {
+  display: flex; flex-direction: column; align-items: center;
+  min-width: 68px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(180,130,255,0.28);
+  border-radius: 12px;
+  padding: 12px 8px;
+}
+.eb-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.1rem; font-weight: 700; color: #fff; line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.eb-lbl {
+  font-size: 9.5px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: rgba(200,165,255,0.65); margin-top: 6px;
+}
+.eb-sep {
+  font-size: 1.7rem; font-weight: 700; color: rgba(180,130,255,0.5);
+  align-self: flex-start; margin-top: 10px;
+}
+.eb-countdown-sub {
+  font-size: 13px; color: rgba(205,175,255,0.78);
+  margin-top: 0.95rem; line-height: 1.5;
+}
+@media (max-width: 900px) { .eb-countdown { width: 100%; } }
+@media (max-width: 440px) {
+  .eb-timer { gap: 6px; }
+  .eb-unit { min-width: 56px; padding: 10px 5px; }
+  .eb-num { font-size: 1.6rem; }
+  .eb-sep { display: none; }
+}
+
+/* ============================================================
    EVENT DETAILS STRIP
 ============================================================ */
 .event-strip {
