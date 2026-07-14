@@ -132,8 +132,16 @@ body {
   align-self: flex-start; margin-top: 10px;
 }
 .eb-countdown-sub {
-  font-size: 13px; color: rgba(205,175,255,0.78);
-  margin-top: 0.95rem; line-height: 1.5;
+  font-size: clamp(1.05rem, 2.6vw, 1.5rem);
+  font-weight: 700;
+  color: #fff;
+  margin-top: 1.15rem;
+  line-height: 1.4;
+  letter-spacing: 0.2px;
+}
+.eb-countdown-sub .eb-emph {
+  color: #ffd76a;
+  white-space: nowrap;
 }
 @media (max-width: 900px) { .eb-countdown { width: 100%; } }
 @media (max-width: 440px) {

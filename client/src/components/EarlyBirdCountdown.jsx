@@ -51,8 +51,8 @@ export default function EarlyBirdCountdown() {
           <div className="eb-unit"><span className="eb-num">{pad(seconds)}</span><span className="eb-lbl">Seconds</span></div>
         </div>
         <div className="eb-countdown-sub">
-          Register on or before {EARLYBIRD_WINDOW.endLabel}
-          {ebFee ? ` for the ${ebFee} Early Bird rate.` : '.'}
+          Register on or before <span className="eb-emph">{EARLYBIRD_WINDOW.endLabel}</span>
+          {ebFee ? <> for the <span className="eb-emph">{ebFee}</span> Early Bird rate.</> : '.'}
         </div>
       </div>
     </section>
