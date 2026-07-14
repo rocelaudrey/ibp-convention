@@ -93,6 +93,32 @@ export const REGISTRATION_TYPES = [
 // single message on the confirmation and to group them in reports.
 export const SPECIAL_RATE_CATEGORIES = ["senior", "pwd", "newlawyer"];
 
+// ── Early Bird promo window ───────────────────────────────────
+// The Early Bird rate is selectable only within this inclusive date
+// range (local calendar date). Outside it, the option is disabled.
+export const EARLYBIRD_WINDOW = {
+  start: "2026-07-12", // YYYY-MM-DD, inclusive
+  end: "2026-08-13",   // YYYY-MM-DD, inclusive
+  label: "July 12 – August 13, 2026",
+  startLabel: "July 12, 2026",
+  endLabel: "August 13, 2026",
+};
+
+// Local calendar date as YYYY-MM-DD (avoids UTC off-by-one from toISOString).
+function localDateISO(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+// True while the Early Bird promo is open. ISO date strings compare
+// lexicographically, so plain <= works for the inclusive bounds.
+export function isEarlyBirdOpen(now = new Date()) {
+  const today = localDateISO(now);
+  return today >= EARLYBIRD_WINDOW.start && today <= EARLYBIRD_WINDOW.end;
+}
+
 export const CATEGORY_LABELS = REGISTRATION_TYPES.reduce((acc, t) => {
   acc[t.value] = t.label;
   return acc;

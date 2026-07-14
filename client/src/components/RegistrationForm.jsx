@@ -3,6 +3,7 @@ import {
   CHAPTERS, REGISTRATION_TYPES,
   isSeniorByBirthday, ageThisYear, SENIOR_AGE,
   isNewLawyerByBarYear,
+  isEarlyBirdOpen, EARLYBIRD_WINDOW,
 } from '../config/event.js';
 import * as api from '../services/api.js';
 import { generateQRDataURL, buildQrPayload } from '../utils/qr.js';
@@ -65,9 +66,10 @@ export default function RegistrationForm() {
     }
   }
 
-  const senior    = isSeniorByBirthday(form.birthday);
-  const newLawyer = isNewLawyerByBarYear(form.barAdmission);
-  const age       = ageThisYear(form.birthday);
+  const senior       = isSeniorByBirthday(form.birthday);
+  const newLawyer    = isNewLawyerByBarYear(form.barAdmission);
+  const age          = ageThisYear(form.birthday);
+  const earlyBirdOpen = isEarlyBirdOpen();
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -84,6 +86,8 @@ export default function RegistrationForm() {
     if (chapter === 'Other' && !chapterOther.trim())
       return setError('Please enter your IBP Chapter name.');
     if (!category)                       return setError('Please select your registration type.');
+    if (category === 'earlybird' && !earlyBirdOpen)
+      return setError(`The Early Bird promo is only available ${EARLYBIRD_WINDOW.label}. Please choose another registration type.`);
     if (category === 'pwd' && !pwdId)    return setError('Please upload a copy of your PWD ID to qualify for the PWD rate.');
     if (!proof)                          return setError('Please upload your proof of payment before submitting.');
     if (!agree)                          return setError('Please agree to the terms and conditions to proceed.');
@@ -254,10 +258,20 @@ export default function RegistrationForm() {
               <label htmlFor="category">Registration Type <span className="req">*</span></label>
               <select id="category" value={form.category} onChange={e => update('category', e.target.value)}>
                 <option value="">— Select registration type —</option>
-                {REGISTRATION_TYPES.map(t => (
-                  <option key={t.value} value={t.value}>{t.label} — {t.fee}</option>
-                ))}
+                {REGISTRATION_TYPES.map(t => {
+                  const ebClosed = t.value === 'earlybird' && !earlyBirdOpen;
+                  return (
+                    <option key={t.value} value={t.value} disabled={ebClosed}>
+                      {t.label} — {t.fee}{ebClosed ? ' (promo ended)' : ''}
+                    </option>
+                  );
+                })}
               </select>
+              {!earlyBirdOpen && (
+                <small style={{ fontSize: 11.5, color: '#b45309', marginTop: 2 }}>
+                  The Early Bird promo ({EARLYBIRD_WINDOW.label}) has ended.
+                </small>
+              )}
               {senior && form.category === 'senior' && (
                 <small style={{ fontSize: 11.5, color: '#166534', marginTop: 2 }}>
                   Senior Citizen discount auto-applied (age {SENIOR_AGE}+ this year).
