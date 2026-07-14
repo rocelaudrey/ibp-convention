@@ -9,6 +9,19 @@ const router = Router();
 router.post('/', async (req, res, next) => {
   try {
     const data = req.body || {};
+    const rollnum = String(data.rollnum || '').trim();
+
+    // Idempotency guard: one Roll of Attorneys Number = one registration.
+    // If it already exists, return that record instead of creating another.
+    // Prevents the accidental double/triple submits that happen when the
+    // form is slow (e.g. server cold start) and the registrant retries.
+    if (rollnum) {
+      const existing = await Attendee.findOne({ rollnum });
+      if (existing) {
+        return res.status(200).json({ ...existing.toJSON(), duplicate: true });
+      }
+    }
+
     if (!data.ref) {
       data.ref = 'IBP-NL-' + Date.now().toString().slice(-7);
     }

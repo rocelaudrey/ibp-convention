@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import {
   CHAPTERS, REGISTRATION_TYPES,
   isSeniorByBirthday, ageThisYear, SENIOR_AGE,
@@ -43,6 +43,9 @@ export default function RegistrationForm() {
   const [error, setError]     = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(null);   // { attendee, qrDataUrl } | null
+  // Synchronous lock so rapid double-clicks can't both fire before React
+  // re-renders the disabled button. The server also dedupes on roll number.
+  const submitLock = useRef(false);
 
   function update(field, value) {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -73,6 +76,7 @@ export default function RegistrationForm() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (submitLock.current) return;   // ignore rapid repeat clicks
     setError('');
 
     const { fname, lname, birthday, email, phone, rollnum, chapter, chapterOther, category } = form;
@@ -94,6 +98,7 @@ export default function RegistrationForm() {
 
     const finalChapter = chapter === 'Other' ? chapterOther.trim() : chapter;
 
+    submitLock.current = true;
     setSubmitting(true);
     try {
       let proofDataUrl = null;
@@ -121,11 +126,14 @@ export default function RegistrationForm() {
       });
 
       const qrDataUrl = await generateQRDataURL(buildQrPayload(attendee), 256);
-      setSuccess({ attendee, qrDataUrl });
+      // `duplicate` means the server found an existing registration for this
+      // roll number and returned it instead of creating a new row.
+      setSuccess({ attendee, qrDataUrl, duplicate: !!attendee.duplicate });
     } catch (err) {
       setError(err.message || 'Submission failed. Please try again.');
     } finally {
       setSubmitting(false);
+      submitLock.current = false;
     }
   }
 
@@ -360,6 +368,7 @@ export default function RegistrationForm() {
         <SuccessModal
           attendee={success.attendee}
           qrDataUrl={success.qrDataUrl}
+          duplicate={success.duplicate}
           onClose={handleSuccessClose}
         />
       )}
