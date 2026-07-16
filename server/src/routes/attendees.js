@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { Attendee } from '../models/Attendee.js';
 import { requireAdmin } from '../middleware/auth.js';
+import { sendPaymentConfirmation, mailerConfigured } from '../mailer.js';
 
 const router = Router();
 
@@ -62,12 +63,24 @@ router.get('/:ref', requireAdmin, async (req, res, next) => {
 // ─── Admin: update ───────────────────────────────────────────
 router.patch('/:ref', requireAdmin, async (req, res, next) => {
   try {
+    const before = await Attendee.findOne({ ref: req.params.ref });
+    if (!before) return res.status(404).json({ error: 'Not found' });
+
     const a = await Attendee.findOneAndUpdate(
       { ref: req.params.ref },
       req.body || {},
       { new: true, runValidators: true }
     );
-    if (!a) return res.status(404).json({ error: 'Not found' });
+
+    // Payment newly verified → send the confirmation email once, in the
+    // background so a mail hiccup never blocks the admin action.
+    const newlyPaid = a.paid && !before.paid;
+    if (newlyPaid && a.email && !a.confirmationEmailSentAt && mailerConfigured()) {
+      sendPaymentConfirmation(a)
+        .then(() => Attendee.updateOne({ _id: a._id }, { confirmationEmailSentAt: new Date() }))
+        .catch((err) => console.error('[mail] payment confirmation failed:', err.message));
+    }
+
     res.json(a);
   } catch (err) {
     next(err);

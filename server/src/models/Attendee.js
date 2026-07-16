@@ -42,7 +42,11 @@ const AttendeeSchema = new mongoose.Schema(
     checkedIn:           { type: Boolean, default: false, index: true },
     checkedInAt:         { type: Date, default: null },
     certificateIssued:   { type: Boolean, default: false },
-    certificateIssuedAt: { type: Date, default: null }
+    certificateIssuedAt: { type: Date, default: null },
+
+    // Set once the "payment verified" confirmation email is sent, so it
+    // never goes out twice even if `paid` is toggled again.
+    confirmationEmailSentAt: { type: Date, default: null }
   },
   { timestamps: true }
 );

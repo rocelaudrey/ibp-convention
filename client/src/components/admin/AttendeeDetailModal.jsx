@@ -28,6 +28,7 @@ export default function AttendeeDetailModal({
   statusBits.push(a.paid ? 'Paid' : 'Unpaid');
   if (a.checkedIn)         statusBits.push(`Checked-in${a.checkedInAt ? ' (' + fmt(a.checkedInAt) + ')' : ''}`);
   if (a.certificateIssued) statusBits.push('Certificate issued');
+  if (a.confirmationEmailSentAt) statusBits.push(`Confirmation emailed (${fmt(a.confirmationEmailSentAt)})`);
 
   const proofIsImage = (a.proofType || '').startsWith('image/');
   const pwdIsImage   = (a.pwdIdType || '').startsWith('image/');

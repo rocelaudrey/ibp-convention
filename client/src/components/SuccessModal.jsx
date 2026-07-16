@@ -19,7 +19,8 @@ export default function SuccessModal({ attendee, qrDataUrl, duplicate, onClose }
           </div>
           <div className="ref-badge">REF #: {attendee.ref}</div>
           <p className="reg-qr-hint">
-            Take a screenshot or download the QR. A copy will also be sent to your email if backend email is configured.
+            Take a screenshot or download the QR. Once your payment is verified, a
+            confirmation email with your QR code will be sent to you.
           </p>
         </div>
 
