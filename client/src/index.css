@@ -511,6 +511,22 @@ body {
 }
 .reg-qr-wrap .qr-canvas img { display: block; width: 168px; height: 168px; }
 .reg-qr-hint { font-size: 11.5px; color: #9b7ed4; max-width: 280px; line-height: 1.5; }
+.reg-email-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  text-align: left;
+  max-width: 320px;
+  background: #f5efff;
+  border: 1px solid #e0d0f7;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #4c1d95;
+}
+.reg-email-note i { font-size: 18px; color: #7c3aed; flex-shrink: 0; margin-top: 1px; }
+.reg-email-note strong { color: #2a1a40; word-break: break-word; }
 
 .modal-actions {
   display: flex; gap: 8px; justify-content: center;

@@ -19,9 +19,26 @@ export default function SuccessModal({ attendee, qrDataUrl, duplicate, onClose }
           </div>
           <div className="ref-badge">REF #: {attendee.ref}</div>
           <p className="reg-qr-hint">
-            Take a screenshot or download the QR. Once your payment is verified, a
-            confirmation email with your QR code will be sent to you.
+            Take a screenshot or download the QR code above.
           </p>
+          {attendee.email ? (
+            <div className="reg-email-note">
+              <i className="ti ti-mail" aria-hidden="true"></i>
+              <span>
+                Once your payment is verified, a <strong>confirmation email</strong> with your
+                QR code will be sent to <strong>{attendee.email}</strong>.
+                {' '}If you don't see it, please check your <strong>Spam / Junk</strong> folder.
+              </span>
+            </div>
+          ) : (
+            <div className="reg-email-note">
+              <i className="ti ti-alert-circle" aria-hidden="true"></i>
+              <span>
+                You didn't provide an email, so please <strong>save this QR code</strong> — it's
+                your entry pass for check-in.
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="modal-actions">
