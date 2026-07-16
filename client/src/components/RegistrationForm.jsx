@@ -19,8 +19,28 @@ const EMPTY = {
   dietary: ''
 };
 
-// Today as YYYY-MM-DD for the date input's max attribute
+// Today as YYYY-MM-DD, used to reject future birthdates.
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
+
+// Date-of-birth dropdown options. The three fields are assembled into a
+// single YYYY-MM-DD `birthday` string, so nothing downstream changes.
+const DOB_MONTHS = [
+  ['01', 'January'], ['02', 'February'], ['03', 'March'], ['04', 'April'],
+  ['05', 'May'], ['06', 'June'], ['07', 'July'], ['08', 'August'],
+  ['09', 'September'], ['10', 'October'], ['11', 'November'], ['12', 'December'],
+];
+const DOB_DAYS = Array.from({ length: 31 }, (_, i) => String(i + 1).padStart(2, '0'));
+const DOB_CURRENT_YEAR = new Date().getFullYear();
+const DOB_YEARS = Array.from({ length: DOB_CURRENT_YEAR - 1925 + 1 }, (_, i) => String(DOB_CURRENT_YEAR - i));
+
+// True only for a real calendar date (rejects e.g. Feb 30, which JS would
+// otherwise roll over into March).
+function isRealDate(iso) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return false;
+  const [y, m, d] = iso.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
+}
 
 function readFileAsDataURL(file) {
   return new Promise((resolve, reject) => {
@@ -47,18 +67,42 @@ export default function RegistrationForm() {
   // re-renders the disabled button. The server also dedupes on roll number.
   const submitLock = useRef(false);
 
+  // Date-of-birth parts live in local state (never sent to the DB); they are
+  // composed into form.birthday only when all three are chosen.
+  const [bMonth, setBMonth] = useState('');
+  const [bDay,   setBDay]   = useState('');
+  const [bYear,  setBYear]  = useState('');
+
+  function updateBirthday(part, value) {
+    const parts = {
+      month: part === 'month' ? value : bMonth,
+      day:   part === 'day'   ? value : bDay,
+      year:  part === 'year'  ? value : bYear,
+    };
+    if (part === 'month') setBMonth(value);
+    if (part === 'day')   setBDay(value);
+    if (part === 'year')  setBYear(value);
+
+    const iso = (parts.year && parts.month && parts.day)
+      ? `${parts.year}-${parts.month}-${parts.day}`
+      : '';
+    setForm(prev => {
+      const next = { ...prev, birthday: iso };
+      // Auto-apply the Senior rate once a complete birthdate is chosen.
+      if (iso && isSeniorByBirthday(iso) && prev.category !== 'senior') {
+        next.category = 'senior';
+      }
+      return next;
+    });
+  }
+
   function update(field, value) {
     setForm(prev => ({ ...prev, [field]: value }));
   }
 
-  // Auto-detect Senior / New Lawyer runs on blur (not on every keystroke) so
-  // partial dates like "0006-04-15" while typing the year don't briefly count
-  // as ancient and flip the category to Senior.
-  function autoApplyDiscountsFromBirthday() {
-    if (isSeniorByBirthday(form.birthday) && form.category !== 'senior') {
-      setForm(prev => ({ ...prev, category: 'senior' }));
-    }
-  }
+  // New-lawyer auto-detect runs on blur of the bar-year field so a partial
+  // year while typing doesn't briefly flip the category. (Senior is handled
+  // in updateBirthday, since the date dropdowns are always complete values.)
   function autoApplyDiscountsFromBarYear() {
     if (
       isNewLawyerByBarYear(form.barAdmission) &&
@@ -81,7 +125,9 @@ export default function RegistrationForm() {
 
     const { fname, lname, birthday, email, phone, rollnum, chapter, chapterOther, category } = form;
     if (!fname.trim() || !lname.trim())  return setError('Please enter your full name (first and last name are required).');
-    if (!birthday)                       return setError('Please enter your date of birth.');
+    if (!birthday)                       return setError('Please complete your date of birth (month, day, and year).');
+    if (!isRealDate(birthday))           return setError('Please enter a valid date of birth.');
+    if (birthday > TODAY_ISO)            return setError('Date of birth cannot be in the future.');
     if (email.trim() && !isValidEmail(email))
       return setError('Please enter a valid email address (e.g. name@example.com).');
     if (!phone.trim())                   return setError('Please enter your contact number.');
@@ -140,6 +186,7 @@ export default function RegistrationForm() {
   function handleSuccessClose() {
     setSuccess(null);
     setForm(EMPTY);
+    setBMonth(''); setBDay(''); setBYear('');
     setProof(null);
     setPwdId(null);
     setAgree(false);
@@ -178,17 +225,34 @@ export default function RegistrationForm() {
               <input id="mname" type="text" value={form.mname} onChange={e => update('mname', e.target.value)} placeholder="Optional" autoComplete="additional-name" />
             </div>
             <div className="field-group field-full">
-              <label htmlFor="birthday">Date of Birth <span className="req">*</span></label>
-              <input
-                id="birthday"
-                type="date"
-                value={form.birthday}
-                min="1900-01-01"
-                max={TODAY_ISO}
-                onChange={e => update('birthday', e.target.value)}
-                onBlur={autoApplyDiscountsFromBirthday}
-                autoComplete="bday"
-              />
+              <label htmlFor="dob-month">Date of Birth <span className="req">*</span></label>
+              <div className="dob-fields">
+                <select
+                  id="dob-month"
+                  aria-label="Birth month"
+                  value={bMonth}
+                  onChange={e => updateBirthday('month', e.target.value)}
+                >
+                  <option value="">Month</option>
+                  {DOB_MONTHS.map(([v, label]) => <option key={v} value={v}>{label}</option>)}
+                </select>
+                <select
+                  aria-label="Birth day"
+                  value={bDay}
+                  onChange={e => updateBirthday('day', e.target.value)}
+                >
+                  <option value="">Day</option>
+                  {DOB_DAYS.map(d => <option key={d} value={d}>{Number(d)}</option>)}
+                </select>
+                <select
+                  aria-label="Birth year"
+                  value={bYear}
+                  onChange={e => updateBirthday('year', e.target.value)}
+                >
+                  <option value="">Year</option>
+                  {DOB_YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                </select>
+              </div>
               {age != null && age >= 0 && (
                 <small style={{ fontSize: 11.5, color: senior ? '#166534' : '#8a6fb2', marginTop: 2 }}>
                   {senior

@@ -243,6 +243,9 @@ body {
 .section-label i { font-size: 22px; }
 .section-gap { margin-bottom: 2.25rem; }
 
+/* Date-of-birth: three dropdowns that compose into one date */
+.dob-fields { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 10px; }
+
 /* Fields — sized for legibility on desktop; scales down on mobile below */
 .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .field-full  { grid-column: 1 / -1; }
