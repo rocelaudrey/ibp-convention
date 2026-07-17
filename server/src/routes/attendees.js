@@ -23,6 +23,14 @@ router.post('/', async (req, res, next) => {
       }
     }
 
+    // Email is required for new registrations (needed for the payment
+    // confirmation). The schema stays optional so legacy records without an
+    // email still load and can be updated by admins.
+    const email = String(data.email || '').trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return res.status(400).json({ error: 'A valid email address is required.' });
+    }
+
     if (!data.ref) {
       data.ref = 'IBP-NL-' + Date.now().toString().slice(-7);
     }

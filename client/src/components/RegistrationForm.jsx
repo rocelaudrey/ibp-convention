@@ -128,8 +128,8 @@ export default function RegistrationForm() {
     if (!birthday)                       return setError('Please complete your date of birth (month, day, and year).');
     if (!isRealDate(birthday))           return setError('Please enter a valid date of birth.');
     if (birthday > TODAY_ISO)            return setError('Date of birth cannot be in the future.');
-    if (email.trim() && !isValidEmail(email))
-      return setError('Please enter a valid email address (e.g. name@example.com).');
+    if (!email.trim())                   return setError('Please enter your email address.');
+    if (!isValidEmail(email))            return setError('Please enter a valid email address (e.g. name@example.com).');
     if (!phone.trim())                   return setError('Please enter your contact number.');
     if (!rollnum.trim())                 return setError('Please enter your Roll of Attorneys Number.');
     if (!chapter)                        return setError('Please select your IBP Chapter.');
@@ -262,7 +262,7 @@ export default function RegistrationForm() {
               )}
             </div>
             <div className="field-group">
-              <label htmlFor="email">Email Address</label>
+              <label htmlFor="email">Email Address <span className="req">*</span></label>
               <input id="email" type="email" value={form.email} onChange={e => update('email', e.target.value)} placeholder="you@example.com" autoComplete="email" />
             </div>
             <div className="field-group">
