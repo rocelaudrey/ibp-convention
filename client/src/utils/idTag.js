@@ -1,24 +1,47 @@
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
-import { EVENT_INFO, CATEGORY_LABELS } from '../config/event.js';
 
 // ──────────────────────────────────────────────────────────────
-// 3" × 4" portrait ID name tag with QR code, designed to print
-// at 100% / "Actual size" on cardstock for a lanyard holder.
+// Name tag built on the designed template image (public/nametag-template.jpg).
+// The template supplies all the artwork (logo, header, DELEGATE banner);
+// we only overlay the QR code, name, chapter, and reference number at
+// coordinates measured against the template's layout.
 // ──────────────────────────────────────────────────────────────
 
-// Badge colors — RGB triplets matching the on-screen .badge styles.
-// Format: [textR, textG, textB, bgR, bgG, bgB]
-const BADGE_COLORS = {
-  earlybird: [22, 101, 52,   220, 252, 231],  // green
-  regular:   [30, 64, 175,   219, 234, 254],  // blue
-  walkin:    [159, 18, 57,   255, 228, 230],  // rose
-  senior:    [17, 94, 89,    204, 251, 241],  // teal
-  _default:  [91, 33, 182,   237, 232, 252]   // purple fallback
-};
+const TEMPLATE_URL = '/nametag-template.jpg';
+const TEMPLATE_RATIO = 1167 / 1600; // width / height of the template image
+
+// Page in inches, preserving the template's aspect ratio.
+const PAGE_W = 4.0;
+const PAGE_H = PAGE_W / TEMPLATE_RATIO; // ≈ 5.48"
+
+// Layout as fractions of the page (measured from the template).
+const BOX_CX = 0.5016;   // white QR box — center x
+const BOX_CY = 0.4814;   // white QR box — center y
+const BOX_W  = 0.5397;   // white QR box — width (fraction of page width)
+const QR_SCALE = 0.86;   // QR fills 86% of the box
+
+const X = (f) => f * PAGE_W;
+const Y = (f) => f * PAGE_H;
+const PT = (fracH) => fracH * PAGE_H * 72; // font size in points from a height fraction
+
+// Cache the template as a data URL so bulk runs fetch it only once.
+let templatePromise = null;
+function loadTemplate() {
+  if (templatePromise) return templatePromise;
+  templatePromise = fetch(TEMPLATE_URL)
+    .then((r) => r.blob())
+    .then((blob) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    }));
+  return templatePromise;
+}
 
 /** Auto-shrink font size until the text fits within maxWidth (in current units). */
-function fitFontSize(doc, text, maxWidth, startSize, minSize = 8) {
+function fitFontSize(doc, text, maxWidth, startSize, minSize = 6) {
   let size = startSize;
   doc.setFontSize(size);
   while (doc.getTextWidth(text) > maxWidth && size > minSize) {
@@ -28,131 +51,71 @@ function fitFontSize(doc, text, maxWidth, startSize, minSize = 8) {
   return size;
 }
 
-// Card dimensions in inches — reused for bulk and single generation.
-const ID_W = 3, ID_H = 4;
-
 /**
- * Draws one ID tag on the CURRENT page of the given jsPDF instance.
- * The caller owns the doc (create, addPage, save) so this can be
- * composed into a multi-page bulk PDF.
+ * Draws one name tag on the CURRENT page of the given jsPDF instance.
+ * `templateData` is the shared template data URL (pass once for bulk).
  */
-export async function drawIdTagOnDoc(doc, attendee) {
-  const W = ID_W, H = ID_H;
-  // ─── White background ─────────────────────────────────────
-  doc.setFillColor(255, 255, 255);
-  doc.rect(0, 0, W, H, 'F');
+export async function drawIdTagOnDoc(doc, attendee, templateData) {
+  const tpl = templateData || (await loadTemplate());
 
-  // ─── Top purple header strip ──────────────────────────────
-  doc.setFillColor(76, 29, 149);  // #4c1d95
-  doc.rect(0, 0, W, 0.6, 'F');
+  // Background template — same alias across pages keeps bulk PDFs small.
+  doc.addImage(tpl, 'JPEG', 0, 0, PAGE_W, PAGE_H, 'nametag-tpl', 'FAST');
 
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.setTextColor(255, 255, 255);
-  doc.text('IBP NORTHERN LUZON', W / 2, 0.28, { align: 'center' });
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(220, 200, 255);
-  doc.text('Regional Convention', W / 2, 0.45, { align: 'center' });
-
-  // ─── QR code (centered, ~1.4" square) ─────────────────────
-  const qrSize = 1.4;
+  // QR code centered in the white box.
+  const qrW = BOX_W * QR_SCALE * PAGE_W;
+  const qrX = X(BOX_CX) - qrW / 2;
+  const qrY = Y(BOX_CY) - qrW / 2;
   const payload = JSON.stringify({
-    ref:  attendee.ref,
-    name: `${attendee.fname} ${attendee.lname}`
+    ref: attendee.ref,
+    name: `${attendee.fname} ${attendee.lname}`,
   });
   const qrDataUrl = await QRCode.toDataURL(payload, {
-    width: 480,
-    margin: 1,
+    width: 600, margin: 1, errorCorrectionLevel: 'H',
     color: { dark: '#2a1a40', light: '#ffffff' },
-    errorCorrectionLevel: 'H'
   });
-  const qrX = (W - qrSize) / 2;
-  const qrY = 0.8;
-  doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrSize, qrSize);
+  doc.addImage(qrDataUrl, 'PNG', qrX, qrY, qrW, qrW);
 
-  // Subtle border around QR for definition
-  doc.setDrawColor(180, 130, 255);
-  doc.setLineWidth(0.01);
-  doc.rect(qrX - 0.04, qrY - 0.04, qrSize + 0.08, qrSize + 0.08);
-
-  // ─── Name (auto-fit) — prefixed with "Atty." on the printed tag ───
-  const bareName = [attendee.fname, attendee.mname, attendee.lname].filter(Boolean).join(' ');
-  const displayName = `Atty. ${bareName}`;
+  // Name (with Atty. prefix), auto-fit to width.
+  const name = `Atty. ${[attendee.fname, attendee.mname, attendee.lname].filter(Boolean).join(' ')}`;
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(42, 26, 64);
-  fitFontSize(doc, displayName, W - 0.3, 15, 9);
-  doc.text(displayName, W / 2, 2.55, { align: 'center' });
+  fitFontSize(doc, name, PAGE_W * 0.86, PT(0.046));
+  doc.text(name, X(0.5), Y(0.735), { align: 'center' });
 
-  // ─── Ref number (monospace) ───────────────────────────────
-  doc.setFont('courier', 'normal');
-  doc.setFontSize(9);
-  doc.setTextColor(91, 33, 182);
-  doc.text(attendee.ref, W / 2, 2.78, { align: 'center' });
-
-  // ─── Chapter ──────────────────────────────────────────────
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(10);
-  doc.setTextColor(106, 77, 142);
-  const chapterLabel = attendee.chapter ? `${attendee.chapter} Chapter` : '';
-  if (chapterLabel) doc.text(chapterLabel, W / 2, 3.02, { align: 'center' });
-
-  // ─── Category badge ───────────────────────────────────────
-  const catLabel = CATEGORY_LABELS[attendee.category] || attendee.category || '';
-  if (catLabel) {
-    const [tr, tg, tb, br, bg, bb] = BADGE_COLORS[attendee.category] || BADGE_COLORS._default;
-    const badgeW = 1.5, badgeH = 0.3;
-    const badgeX = (W - badgeW) / 2;
-    const badgeY = 3.2;
-
-    doc.setFillColor(br, bg, bb);
-    doc.roundedRect(badgeX, badgeY, badgeW, badgeH, 0.09, 0.09, 'F');
-
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    doc.setTextColor(tr, tg, tb);
-    doc.text(catLabel.toUpperCase(), W / 2, badgeY + 0.19, { align: 'center' });
+  // Chapter.
+  if (attendee.chapter) {
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(91, 33, 182);
+    fitFontSize(doc, `${attendee.chapter} Chapter`, PAGE_W * 0.86, PT(0.030));
+    doc.text(`${attendee.chapter} Chapter`, X(0.5), Y(0.788), { align: 'center' });
   }
 
-  // ─── Bottom purple footer strip ───────────────────────────
-  const footerH = 0.45;
-  doc.setFillColor(76, 29, 149);
-  doc.rect(0, H - footerH, W, footerH, 'F');
-
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(7);
-  doc.setTextColor(220, 200, 255);
-  doc.text(EVENT_INFO.date, W / 2, H - 0.24, { align: 'center' });
-
-  doc.setFontSize(6);
-  doc.setTextColor(200, 170, 255);
-  doc.text('OFFICIAL ATTENDEE', W / 2, H - 0.1, { align: 'center' });
-
-  // ─── Outer border ─────────────────────────────────────────
-  doc.setDrawColor(76, 29, 149);
-  doc.setLineWidth(0.02);
-  doc.rect(0.04, 0.04, W - 0.08, H - 0.08);
+  // Reference number.
+  doc.setFont('courier', 'normal');
+  doc.setTextColor(76, 29, 149);
+  doc.setFontSize(PT(0.024));
+  doc.text(attendee.ref, X(0.5), Y(0.828), { align: 'center' });
 
   return doc;
 }
 
-/** Single-attendee ID tag — creates a doc, draws, saves. */
+/** Single-attendee name tag — creates a doc, draws, saves. */
 export async function generateIdTagPDF(attendee) {
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'in', format: [ID_W, ID_H] });
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'in', format: [PAGE_W, PAGE_H] });
   await drawIdTagOnDoc(doc, attendee);
   const bareName = [attendee.fname, attendee.mname, attendee.lname].filter(Boolean).join(' ');
   const safeName = bareName.replace(/[^a-z0-9]+/gi, '_');
   doc.save(`IDTag_${safeName}_${attendee.ref}.pdf`);
 }
 
-/** Bulk ID tags — one 3×4 page per attendee, all saved as a single PDF. */
+/** Bulk name tags — one page per attendee, all saved as a single PDF. */
 export async function generateBulkIdTagsPDF(attendees, { onProgress } = {}) {
   if (!attendees.length) return;
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'in', format: [ID_W, ID_H] });
+  const tpl = await loadTemplate();
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'in', format: [PAGE_W, PAGE_H] });
   for (let i = 0; i < attendees.length; i++) {
-    if (i > 0) doc.addPage([ID_W, ID_H], 'portrait');
-    await drawIdTagOnDoc(doc, attendees[i]);
+    if (i > 0) doc.addPage([PAGE_W, PAGE_H], 'portrait');
+    await drawIdTagOnDoc(doc, attendees[i], tpl);
     if (onProgress) onProgress(i + 1, attendees.length);
   }
   const stamp = new Date().toISOString().slice(0, 10);
