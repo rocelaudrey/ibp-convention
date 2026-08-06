@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf';
 import QRCode from 'qrcode';
+import { EVENT_INFO } from '../config/event.js';
 
 // ──────────────────────────────────────────────────────────────
 // Name tag built on the designed template image (public/nametag-template.jpg).
@@ -79,22 +80,30 @@ export async function drawIdTagOnDoc(doc, attendee, templateData) {
   const name = `Atty. ${[attendee.fname, attendee.mname, attendee.lname].filter(Boolean).join(' ')}`;
   doc.setFont('helvetica', 'bold');
   doc.setTextColor(42, 26, 64);
-  fitFontSize(doc, name, PAGE_W * 0.86, PT(0.046));
-  doc.text(name, X(0.5), Y(0.735), { align: 'center' });
+  fitFontSize(doc, name, PAGE_W * 0.86, PT(0.044));
+  doc.text(name, X(0.5), Y(0.724), { align: 'center' });
 
   // Chapter.
   if (attendee.chapter) {
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(91, 33, 182);
-    fitFontSize(doc, `${attendee.chapter} Chapter`, PAGE_W * 0.86, PT(0.030));
-    doc.text(`${attendee.chapter} Chapter`, X(0.5), Y(0.788), { align: 'center' });
+    fitFontSize(doc, `${attendee.chapter} Chapter`, PAGE_W * 0.86, PT(0.028));
+    doc.text(`${attendee.chapter} Chapter`, X(0.5), Y(0.767), { align: 'center' });
+  }
+
+  // Convention date.
+  if (EVENT_INFO.date) {
+    doc.setFont('helvetica', 'bolditalic');
+    doc.setTextColor(124, 58, 237);
+    fitFontSize(doc, EVENT_INFO.date, PAGE_W * 0.86, PT(0.024));
+    doc.text(EVENT_INFO.date, X(0.5), Y(0.806), { align: 'center' });
   }
 
   // Reference number.
   doc.setFont('courier', 'normal');
-  doc.setTextColor(76, 29, 149);
-  doc.setFontSize(PT(0.024));
-  doc.text(attendee.ref, X(0.5), Y(0.828), { align: 'center' });
+  doc.setTextColor(120, 90, 170);
+  doc.setFontSize(PT(0.020));
+  doc.text(attendee.ref, X(0.5), Y(0.840), { align: 'center' });
 
   return doc;
 }
