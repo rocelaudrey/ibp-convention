@@ -102,6 +102,23 @@ body {
   text-align: center;
   box-shadow: 0 12px 40px rgba(0,0,0,0.25);
 }
+.eb-extended-badge {
+  display: flex;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #ffd76a, #f5a623);
+  color: #4c1d95;
+  font-weight: 800;
+  font-size: clamp(0.85rem, 2vw, 1.05rem);
+  letter-spacing: 0.3px;
+  padding: 8px 18px;
+  border-radius: 999px;
+  margin: 0 auto 0.9rem;
+  box-shadow: 0 6px 20px rgba(245,166,35,0.35);
+  text-transform: uppercase;
+}
+.eb-extended-badge i { font-size: 1.15em; }
 .eb-countdown-head {
   display: inline-flex; align-items: center; gap: 8px;
   font-size: 12px; letter-spacing: 2.5px; text-transform: uppercase;

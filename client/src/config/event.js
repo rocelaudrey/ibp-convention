@@ -98,10 +98,11 @@ export const SPECIAL_RATE_CATEGORIES = ["senior", "pwd", "newlawyer"];
 // range (local calendar date). Outside it, the option is disabled.
 export const EARLYBIRD_WINDOW = {
   start: "2026-07-12", // YYYY-MM-DD, inclusive
-  end: "2026-08-13",   // YYYY-MM-DD, inclusive
-  label: "July 12 – August 13, 2026",
+  end: "2026-08-31",   // YYYY-MM-DD, inclusive (extended from Aug 13)
+  label: "July 12 – August 31, 2026",
   startLabel: "July 12, 2026",
-  endLabel: "August 13, 2026",
+  endLabel: "August 31, 2026",
+  extended: true, // show an "extended" emphasis in the countdown banner
 };
 
 // Local calendar date as YYYY-MM-DD (avoids UTC off-by-one from toISOString).

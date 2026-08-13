@@ -37,6 +37,12 @@ export default function EarlyBirdCountdown() {
   return (
     <section className="eb-countdown" aria-label="Early Bird registration countdown">
       <div className="eb-countdown-inner">
+        {EARLYBIRD_WINDOW.extended && (
+          <div className="eb-extended-badge">
+            <i className="ti ti-confetti" aria-hidden="true"></i>
+            Early Bird Extended to {EARLYBIRD_WINDOW.endLabel}!
+          </div>
+        )}
         <div className="eb-countdown-head">
           <i className="ti ti-clock-hour-4" aria-hidden="true"></i>
           <span>Early Bird ends in</span>
