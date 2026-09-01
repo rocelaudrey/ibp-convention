@@ -15,6 +15,7 @@ import CheckInBar from '../components/admin/CheckInBar.jsx';
 import FiltersBar from '../components/admin/FiltersBar.jsx';
 import AttendeesTable from '../components/admin/AttendeesTable.jsx';
 import AttendeeDetailModal from '../components/admin/AttendeeDetailModal.jsx';
+import EditAttendeeModal from '../components/admin/EditAttendeeModal.jsx';
 
 export default function AdminPage() {
   const { isAuthed, user, isSuperAdmin, login, logout } = useAdminAuth();
@@ -24,6 +25,7 @@ export default function AdminPage() {
   const [chapter, setChapter] = useState('');
   const [status,  setStatus]  = useState('');
   const [openRef, setOpenRef] = useState(null);
+  const [editing, setEditing] = useState(false);
   // The list omits heavy image fields for speed; fetch the full record
   // (proof + PWD ID) when a detail modal opens.
   const [openFull, setOpenFull] = useState(null);
@@ -211,6 +213,8 @@ export default function AdminPage() {
         <AttendeeDetailModal
           attendee={openAttendee}
           loadingFull={!!openRef && !(openFull && openFull.ref === openRef)}
+          canEdit={isSuperAdmin}
+          onEdit={() => setEditing(true)}
           onClose={() => setOpenRef(null)}
           onTogglePaid={togglePaid}
           onToggleCheckIn={toggleCheckIn}
@@ -218,6 +222,14 @@ export default function AdminPage() {
           onDownloadQR={downloadQR}
           onPrintIdTag={printIdTag}
           onDelete={deleteOne}
+        />
+      )}
+
+      {editing && openAttendee && (
+        <EditAttendeeModal
+          attendee={openAttendee}
+          onClose={() => setEditing(false)}
+          onSave={async (ref, patch) => { await update(ref, patch); }}
         />
       )}
     </div>

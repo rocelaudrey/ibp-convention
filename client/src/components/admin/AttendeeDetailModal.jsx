@@ -16,7 +16,9 @@ function fmtDate(yyyyMmDd) {
 export default function AttendeeDetailModal({
   attendee,
   loadingFull = false,
+  canEdit = false,
   onClose,
+  onEdit,
   onTogglePaid, onToggleCheckIn, onIssueCert, onDownloadQR, onPrintIdTag, onDelete
 }) {
   if (!attendee) return null;
@@ -108,6 +110,11 @@ export default function AttendeeDetailModal({
         )}
 
         <div className="detail-actions">
+          {canEdit && (
+            <button className="ghost" onClick={() => onEdit(a.ref)}>
+              <i className="ti ti-edit" aria-hidden="true"></i> Edit Details
+            </button>
+          )}
           <button className="ghost" onClick={() => onTogglePaid(a.ref)}>
             <i className={`ti ti-${a.paid ? 'cash-off' : 'cash'}`} aria-hidden="true"></i>
             {a.paid ? ' Mark Unpaid' : ' Mark Paid'}

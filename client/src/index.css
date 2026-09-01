@@ -1412,6 +1412,14 @@ table.admin-table .row-actions { display: flex; gap: 4px; flex-wrap: wrap; }
   max-width: 460px;
   text-align: left;
 }
+.modal-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #2a1a40;
+  margin: 0 0 0.35rem;
+  padding-right: 1.75rem; /* clear the close button */
+}
 .modal-sub {
   font-size: 13px;
   color: #6b5080;
@@ -1420,6 +1428,14 @@ table.admin-table .row-actions { display: flex; gap: 4px; flex-wrap: wrap; }
 }
 .user-form { display: flex; flex-direction: column; gap: 0.9rem; }
 .user-form .field-group { display: flex; flex-direction: column; gap: 4px; }
+
+/* Edit-attendee modal: wider, with multi-column field rows. */
+.edit-modal { max-width: 640px; }
+.edit-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9rem; }
+.edit-row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.9rem; }
+@media (max-width: 560px) {
+  .edit-row2, .edit-row3 { grid-template-columns: 1fr; }
+}
 .user-form label {
   font-size: 12px;
   font-weight: 600;

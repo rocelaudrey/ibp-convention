@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function UserFormModal({ existing, me, onClose, onSave }) {
   const isEdit = !!existing;
@@ -40,10 +41,10 @@ export default function UserFormModal({ existing, me, onClose, onSave }) {
     }
   }
 
-  return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-card user-modal" onClick={(e) => e.stopPropagation()}>
-        <button className="modal-close" onClick={onClose} aria-label="Close">
+  return createPortal(
+    <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }} role="dialog" aria-modal="true">
+      <div className="modal-card user-modal">
+        <button className="modal-close-x" onClick={onClose} aria-label="Close">
           <i className="ti ti-x" aria-hidden="true"></i>
         </button>
         <h2 className="modal-title">{isEdit ? `Edit ${existing.username}` : 'New user'}</h2>
@@ -132,6 +133,7 @@ export default function UserFormModal({ existing, me, onClose, onSave }) {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

@@ -68,9 +68,22 @@ router.get('/:ref', requireAdmin, async (req, res, next) => {
   }
 });
 
+// Registration-detail fields. Editing any of these requires super_admin;
+// operational fields (paid, checkedIn, certificate…) stay open to staff.
+const PROTECTED_FIELDS = [
+  'fname', 'mname', 'lname', 'email', 'phone', 'rollnum',
+  'chapter', 'barAdmission', 'category', 'birthday', 'dietary',
+];
+
 // ─── Admin: update ───────────────────────────────────────────
 router.patch('/:ref', requireAdmin, async (req, res, next) => {
   try {
+    const body = req.body || {};
+    const editsDetails = Object.keys(body).some((k) => PROTECTED_FIELDS.includes(k));
+    if (editsDetails && req.auth.role !== 'super_admin') {
+      return res.status(403).json({ error: 'Only a super admin can edit registration details.' });
+    }
+
     const before = await Attendee.findOne({ ref: req.params.ref });
     if (!before) return res.status(404).json({ error: 'Not found' });
 
