@@ -1,7 +1,13 @@
 // REST API implementation of the data adapter.
 // Activated when VITE_API_MODE=api.
 
-const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+// Always call the API same-origin ("/api/...") so the browser only ever
+// contacts the site's own host (Vercel in prod, the Vite dev proxy locally).
+// Vercel rewrites "/api/*" to the Render backend server-side — this keeps
+// browsers off Render's IP range, which some Philippine ISPs fail to route
+// to. VITE_API_URL is intentionally ignored so a stale value can't send the
+// browser back to the blocked host.
+const BASE = '';
 const TOKEN_KEY = 'ibpNLConvention.adminToken';
 const USER_KEY  = 'ibpNLConvention.adminUser';
 
