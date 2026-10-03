@@ -37,6 +37,52 @@ body {
 }
 
 /* ============================================================
+   MAINTENANCE SCREEN
+============================================================ */
+.maintenance-bg { display: flex; align-items: center; justify-content: center; }
+.maintenance-wrap {
+  position: relative;
+  z-index: 1;
+  max-width: 560px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+.maintenance-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.6rem, 5vw, 2.4rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.2;
+  margin: 0.5rem 0 1rem;
+}
+.maintenance-msg {
+  font-size: 16px;
+  color: rgba(215,190,255,0.85);
+  line-height: 1.6;
+  margin: 0 auto 1.5rem;
+  max-width: 460px;
+}
+.maintenance-meta {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(180,130,255,0.28);
+  border-radius: 12px;
+  padding: 14px 20px;
+  margin-bottom: 1.5rem;
+  font-size: 14px;
+  color: rgba(230,214,255,0.9);
+}
+.maintenance-meta i { color: #c4a3ff; margin-right: 8px; }
+.maintenance-contact { font-size: 13.5px; color: rgba(200,170,255,0.75); }
+.maintenance-contact a { color: #c4a3ff; font-weight: 600; text-decoration: none; }
+.maintenance-contact a:hover { text-decoration: underline; }
+
+/* ============================================================
    HERO
 ============================================================ */
 .hero { text-align: center; padding: 2.5rem 1.25rem 2rem; position: relative; z-index: 1; }
