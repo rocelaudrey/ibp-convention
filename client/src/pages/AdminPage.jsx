@@ -83,7 +83,11 @@ export default function AdminPage() {
     ? {
         ...openListRow,
         ...(openFull && openFull.ref === openRef
-          ? { proofDataUrl: openFull.proofDataUrl, pwdIdDataUrl: openFull.pwdIdDataUrl }
+          ? {
+              proofDataUrl: openFull.proofDataUrl,
+              pwdIdDataUrl: openFull.pwdIdDataUrl,
+              verifDocDataUrl: openFull.verifDocDataUrl,
+            }
           : {}),
       }
     : null;
