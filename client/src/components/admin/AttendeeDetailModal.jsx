@@ -35,6 +35,13 @@ export default function AttendeeDetailModal({
   const proofIsImage = (a.proofType || '').startsWith('image/');
   const pwdIsImage   = (a.pwdIdType || '').startsWith('image/');
   const hasPwdId     = a.category === 'pwd' || a.pwdIdName || a.pwdIdDataUrl;
+  const verifIsImage = (a.verifDocType || '').startsWith('image/');
+  const isPromo      = a.category === 'promo' || a.promoCategory || a.verifDocName || a.verifDocDataUrl;
+  const promoCatLabel = a.promoCategory === 'A'
+    ? 'Category A — Newly Admitted Lawyer'
+    : a.promoCategory === 'B'
+      ? 'Category B — Government Lawyer'
+      : '';
 
   return (
     <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) onClose(); }} role="dialog" aria-modal="true">
@@ -68,6 +75,12 @@ export default function AttendeeDetailModal({
           <div className="dg-item"><div className="dg-label">Roll of Attorneys Number</div><div className="dg-value">{a.rollnum || '—'}</div></div>
           <div className="dg-item"><div className="dg-label">Chapter</div><div className="dg-value">{a.chapter || '—'}</div></div>
           <div className="dg-item"><div className="dg-label">Registration Type</div><div className="dg-value">{CATEGORY_LABELS[a.category] || a.category || '—'}</div></div>
+          {isPromo && promoCatLabel && (
+            <div className="dg-item"><div className="dg-label">Promo Category</div><div className="dg-value">{promoCatLabel}</div></div>
+          )}
+          {a.promoCategory === 'B' && (
+            <div className="dg-item"><div className="dg-label">Government Agency</div><div className="dg-value">{a.govAgency || '—'}</div></div>
+          )}
           <div className="dg-item"><div className="dg-label">Year Admitted to the Bar</div><div className="dg-value">{a.barAdmission || '—'}</div></div>
           <div className="dg-item dg-full"><div className="dg-label">Dietary / Special Needs</div><div className="dg-value">{a.dietary || 'None'}</div></div>
           <div className="dg-item"><div className="dg-label">Registered</div><div className="dg-value">{fmt(a.registeredAt)}</div></div>
@@ -104,6 +117,25 @@ export default function AttendeeDetailModal({
             {a.pwdIdDataUrl && (
               <div>
                 <a href={a.pwdIdDataUrl} download={a.pwdIdName || 'pwd-id'}>Download attached file</a>
+              </div>
+            )}
+          </div>
+        )}
+
+        {isPromo && (
+          <div className="detail-proof">
+            <div className="proof-name">
+              Promo Verification —{' '}
+              {a.verifDocDataUrl
+                ? (a.verifDocName || 'uploaded')
+                : (loadingFull && a.verifDocName)
+                  ? `${a.verifDocName} — loading attachment…`
+                  : (a.verifDocName ? `${a.verifDocName} (file not stored)` : 'not uploaded')}
+            </div>
+            {a.verifDocDataUrl && verifIsImage && <img src={a.verifDocDataUrl} alt="Verification document" />}
+            {a.verifDocDataUrl && (
+              <div>
+                <a href={a.verifDocDataUrl} download={a.verifDocName || 'verification'}>Download attached file</a>
               </div>
             )}
           </div>

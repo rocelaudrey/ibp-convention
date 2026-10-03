@@ -20,10 +20,15 @@ const AttendeeSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ['earlybird', 'regular', 'walkin', 'senior', 'pwd', 'newlawyer'],
+      // 'newlawyer'/'walkin' kept for legacy records; current UI offers the rest.
+      enum: ['earlybird', 'regular', 'walkin', 'senior', 'pwd', 'newlawyer', 'promo'],
       index: true
     },
     dietary:  { type: String, default: '' },
+
+    // ₱4,500 Special Promo — set only when category === 'promo'.
+    promoCategory: { type: String, default: '' },  // 'A' (newly admitted) | 'B' (government)
+    govAgency:     { type: String, default: '' },  // Category B: agency/office
 
     // Proof of payment
     // For an MVP we accept a base64 dataURL. For production swap this
@@ -36,6 +41,11 @@ const AttendeeSchema = new mongoose.Schema(
     pwdIdName:    { type: String, default: '' },
     pwdIdType:    { type: String, default: '' },
     pwdIdDataUrl: { type: String, default: null },
+
+    // Eligibility verification doc — required only when category === 'promo'.
+    verifDocName:    { type: String, default: '' },
+    verifDocType:    { type: String, default: '' },
+    verifDocDataUrl: { type: String, default: null },
 
     registeredAt:        { type: Date, default: Date.now },
     paid:                { type: Boolean, default: false, index: true },

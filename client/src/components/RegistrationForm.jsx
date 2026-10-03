@@ -2,8 +2,7 @@ import { useRef, useState } from 'react';
 import {
   CHAPTERS, REGISTRATION_TYPES,
   isSeniorByBirthday, ageThisYear, SENIOR_AGE,
-  isNewLawyerByBarYear,
-  isEarlyBirdOpen, EARLYBIRD_WINDOW,
+  isEarlyBirdOpen, EARLYBIRD_WINDOW, PROMO,
 } from '../config/event.js';
 import * as api from '../services/api.js';
 import { generateQRDataURL, buildQrPayload } from '../utils/qr.js';
@@ -16,6 +15,7 @@ const EMPTY = {
   birthday: '',
   email: '', phone: '',
   rollnum: '', chapter: '', chapterOther: '', barAdmission: '', category: '',
+  promoCategory: '', govAgency: '',
   dietary: ''
 };
 
@@ -59,6 +59,7 @@ export default function RegistrationForm() {
   const [form, setForm]       = useState(EMPTY);
   const [proof, setProof]     = useState(null);
   const [pwdId, setPwdId]     = useState(null);
+  const [verifDoc, setVerifDoc] = useState(null);  // promo eligibility document
   const [agree, setAgree]     = useState(false);
   const [error, setError]     = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -100,21 +101,7 @@ export default function RegistrationForm() {
     setForm(prev => ({ ...prev, [field]: value }));
   }
 
-  // New-lawyer auto-detect runs on blur of the bar-year field so a partial
-  // year while typing doesn't briefly flip the category. (Senior is handled
-  // in updateBirthday, since the date dropdowns are always complete values.)
-  function autoApplyDiscountsFromBarYear() {
-    if (
-      isNewLawyerByBarYear(form.barAdmission) &&
-      !isSeniorByBirthday(form.birthday) &&
-      form.category !== 'newlawyer'
-    ) {
-      setForm(prev => ({ ...prev, category: 'newlawyer' }));
-    }
-  }
-
   const senior       = isSeniorByBirthday(form.birthday);
-  const newLawyer    = isNewLawyerByBarYear(form.barAdmission);
   const age          = ageThisYear(form.birthday);
   const earlyBirdOpen = isEarlyBirdOpen();
 
@@ -139,6 +126,12 @@ export default function RegistrationForm() {
     if (category === 'earlybird' && !earlyBirdOpen)
       return setError(`The Early Bird promo is only available ${EARLYBIRD_WINDOW.label}. Please choose another registration type.`);
     if (category === 'pwd' && !pwdId)    return setError('Please upload a copy of your PWD ID to qualify for the PWD rate.');
+    if (category === 'promo') {
+      if (!form.promoCategory)           return setError('Please choose your promo eligibility category (Newly Admitted or Government Lawyer).');
+      if (form.promoCategory === 'B' && !form.govAgency.trim())
+        return setError('Please enter your government agency / office.');
+      if (!verifDoc)                     return setError('Please upload a verification document to qualify for the Special Promo rate.');
+    }
     if (!proof)                          return setError('Please upload your proof of payment before submitting.');
     if (!agree)                          return setError('Please agree to the terms and conditions to proceed.');
 
@@ -157,6 +150,12 @@ export default function RegistrationForm() {
         catch { /* ignore — registration still proceeds */ }
       }
 
+      let verifDocDataUrl = null;
+      if (verifDoc) {
+        try { verifDocDataUrl = await readFileAsDataURL(verifDoc); }
+        catch { /* ignore — registration still proceeds */ }
+      }
+
       const ref = 'IBP-NL-' + Date.now().toString().slice(-7);
       const { chapterOther: _drop, ...rest } = form;
       const attendee = await api.createAttendee({
@@ -169,6 +168,9 @@ export default function RegistrationForm() {
         pwdIdName:    pwdId?.name || '',
         pwdIdType:    pwdId?.type || '',
         pwdIdDataUrl,
+        verifDocName:    verifDoc?.name || '',
+        verifDocType:    verifDoc?.type || '',
+        verifDocDataUrl,
       });
 
       const qrDataUrl = await generateQRDataURL(buildQrPayload(attendee), 256);
@@ -189,6 +191,7 @@ export default function RegistrationForm() {
     setBMonth(''); setBDay(''); setBYear('');
     setProof(null);
     setPwdId(null);
+    setVerifDoc(null);
     setAgree(false);
     setError('');
   }
@@ -322,13 +325,26 @@ export default function RegistrationForm() {
                 max={new Date().getFullYear()}
                 value={form.barAdmission}
                 onChange={e => update('barAdmission', e.target.value)}
-                onBlur={autoApplyDiscountsFromBarYear}
                 placeholder="e.g. 2015"
               />
             </div>
             <div className="field-group field-full">
               <label htmlFor="category">Registration Type <span className="req">*</span></label>
-              <select id="category" value={form.category} onChange={e => update('category', e.target.value)}>
+              <select
+                id="category"
+                value={form.category}
+                onChange={e => {
+                  const v = e.target.value;
+                  // Clear promo-only fields when switching away from the promo.
+                  setForm(prev => ({
+                    ...prev,
+                    category: v,
+                    promoCategory: v === 'promo' ? prev.promoCategory : '',
+                    govAgency: v === 'promo' ? prev.govAgency : '',
+                  }));
+                  if (v !== 'promo') setVerifDoc(null);
+                }}
+              >
                 <option value="">— Select registration type —</option>
                 {REGISTRATION_TYPES.map(t => {
                   const ebClosed = t.value === 'earlybird' && !earlyBirdOpen;
@@ -354,22 +370,19 @@ export default function RegistrationForm() {
                   You qualify for the Senior Citizen rate. Switch back if this was unintentional.
                 </small>
               )}
-              {!senior && newLawyer && form.category === 'newlawyer' && (
-                <small style={{ fontSize: 11.5, color: '#166534', marginTop: 2 }}>
-                  New Lawyer discount auto-applied (admitted to the bar this year).
-                </small>
-              )}
-              {!senior && newLawyer && form.category && form.category !== 'newlawyer' && (
-                <small style={{ fontSize: 11.5, color: '#b45309', marginTop: 2 }}>
-                  You qualify for the New Lawyer rate. Switch back if this was unintentional.
-                </small>
-              )}
               {form.category === 'pwd' && (
                 <small style={{ fontSize: 11.5, color: '#6b5080', marginTop: 2 }}>
                   A copy of your PWD ID is required to qualify for this rate — please upload it below.
                 </small>
               )}
+              {form.category === 'promo' && (
+                <small style={{ fontSize: 11.5, color: '#6b5080', marginTop: 2 }}>
+                  Only for Newly Admitted Lawyers (Roll signed CY 2025–2026) and Government Lawyers.
+                  Select your category and upload a verification document below.
+                </small>
+              )}
             </div>
+
             {form.category === 'pwd' && (
               <div className="field-group field-full">
                 <label>PWD ID <span className="req">*</span></label>
@@ -379,6 +392,57 @@ export default function RegistrationForm() {
                   onClear={() => setPwdId(null)}
                 />
               </div>
+            )}
+
+            {form.category === 'promo' && (
+              <>
+                <div className="field-group field-full">
+                  <label>Promo Eligibility Category <span className="req">*</span></label>
+                  <div className="promo-cat-options">
+                    {PROMO.categories.map(c => (
+                      <label key={c.code} className={`promo-cat ${form.promoCategory === c.code ? 'selected' : ''}`}>
+                        <input
+                          type="radio"
+                          name="promoCategory"
+                          value={c.code}
+                          checked={form.promoCategory === c.code}
+                          onChange={() => update('promoCategory', c.code)}
+                        />
+                        <span className="promo-cat-label">{c.label}</span>
+                        <span className="promo-cat-hint">{c.hint}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {form.promoCategory === 'B' && (
+                  <div className="field-group field-full">
+                    <label htmlFor="govAgency">Government Agency / Office <span className="req">*</span></label>
+                    <input
+                      id="govAgency"
+                      type="text"
+                      value={form.govAgency}
+                      onChange={e => update('govAgency', e.target.value)}
+                      placeholder="e.g. Public Attorney's Office, RTC Branch 27, DOJ"
+                    />
+                  </div>
+                )}
+
+                {form.promoCategory && (
+                  <div className="field-group field-full">
+                    <label>Verification Document <span className="req">*</span></label>
+                    <small className="hint" style={{ marginBottom: 6, display: 'block', color: '#6b5080' }}>
+                      Upload any one of:{' '}
+                      {(PROMO.categories.find(c => c.code === form.promoCategory)?.docs || []).join('; ')}.
+                    </small>
+                    <UploadZone
+                      file={verifDoc}
+                      onFile={(f, err) => { setVerifDoc(f); if (err) setError(err); }}
+                      onClear={() => setVerifDoc(null)}
+                    />
+                  </div>
+                )}
+              </>
             )}
             <div className="field-group field-full">
               <label htmlFor="dietary">Dietary Requirements / Special Needs</label>

@@ -13,7 +13,8 @@ export const CATEGORY_LABELS = {
   regular: 'Regular',
   senior: 'Senior Citizen',
   pwd: 'PWD',
-  newlawyer: 'Lawyer Admitted in 2026',
+  promo: 'Special Promo (Newly Admitted / Gov’t Lawyer)',
+  newlawyer: 'Lawyer Admitted in 2026', // legacy records
 };
 
 export const CATEGORY_FEE = {
@@ -21,5 +22,6 @@ export const CATEGORY_FEE = {
   regular: 7000,
   senior: 6000,
   pwd: 6000,
-  newlawyer: 6000,
+  promo: 4500,
+  newlawyer: 6000, // legacy records
 };

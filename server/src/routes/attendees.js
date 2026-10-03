@@ -49,7 +49,7 @@ router.post('/', async (req, res, next) => {
 router.get('/', requireAdmin, async (req, res, next) => {
   try {
     const list = await Attendee.find()
-      .select('-proofDataUrl -pwdIdDataUrl')
+      .select('-proofDataUrl -pwdIdDataUrl -verifDocDataUrl')
       .sort({ registeredAt: -1 });
     res.json(list);
   } catch (err) {
@@ -73,6 +73,7 @@ router.get('/:ref', requireAdmin, async (req, res, next) => {
 const PROTECTED_FIELDS = [
   'fname', 'mname', 'lname', 'email', 'phone', 'rollnum',
   'chapter', 'barAdmission', 'category', 'birthday', 'dietary',
+  'promoCategory', 'govAgency',
 ];
 
 // ─── Admin: update ───────────────────────────────────────────

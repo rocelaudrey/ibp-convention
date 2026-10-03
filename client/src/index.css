@@ -215,6 +215,78 @@ body {
 }
 
 /* ============================================================
+   SPECIAL PROMO INFO
+============================================================ */
+.promo-info-section {
+  position: relative;
+  z-index: 1;
+  width: 70vw;
+  max-width: 1100px;
+  min-width: 320px;
+  margin: 0 auto 1.5rem;
+  padding: 0 1.25rem;
+}
+.promo-info-inner {
+  background: linear-gradient(135deg, rgba(236,72,153,0.14), rgba(124,58,237,0.14));
+  border: 1px solid rgba(220,140,210,0.3);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.22);
+}
+.promo-info-head { text-align: center; margin-bottom: 1.25rem; }
+.promo-info-eyebrow {
+  font-size: 11px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: #f0a6d6; font-weight: 700;
+}
+.promo-info-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.3rem, 3.5vw, 1.85rem);
+  font-weight: 700; color: #fff; margin: 0.35rem 0 0.5rem;
+}
+.promo-info-sub {
+  font-size: 14px; color: rgba(225,205,250,0.85); line-height: 1.55;
+  max-width: 620px; margin: 0 auto;
+}
+.promo-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem; }
+@media (max-width: 720px) { .promo-cards { grid-template-columns: 1fr; } }
+.promo-card {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(180,130,255,0.25);
+  border-radius: 12px;
+  padding: 1rem 1.15rem;
+}
+.promo-card-title { font-weight: 700; font-size: 15px; color: #fff; margin-bottom: 4px; }
+.promo-card-hint { font-size: 12.5px; color: rgba(210,185,250,0.8); line-height: 1.5; margin-bottom: 10px; }
+.promo-card-docs-label { font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: #f0a6d6; font-weight: 600; margin-bottom: 4px; }
+.promo-card-docs { margin: 0; padding-left: 18px; }
+.promo-card-docs li { font-size: 12.5px; color: rgba(225,205,250,0.9); line-height: 1.5; margin-bottom: 3px; }
+
+.promo-reimburse {
+  background: rgba(255,255,255,0.05);
+  border: 1px dashed rgba(220,140,210,0.4);
+  border-radius: 12px;
+  padding: 1.1rem 1.25rem;
+}
+.promo-reimburse-head {
+  display: flex; align-items: center; gap: 8px;
+  font-weight: 700; font-size: 15px; color: #fff; margin-bottom: 0.6rem;
+}
+.promo-reimburse-head i { font-size: 20px; color: #f0a6d6; }
+.promo-reimburse p { font-size: 13.5px; color: rgba(222,202,248,0.88); line-height: 1.6; margin: 0 0 0.7rem; }
+.promo-reimburse strong { color: #ffd76a; }
+.promo-download-btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: linear-gradient(135deg, #db2777, #9d174d);
+  color: #fff; font-weight: 600; font-size: 14px;
+  padding: 11px 20px; border-radius: 999px; text-decoration: none;
+  box-shadow: 0 6px 20px rgba(219,39,119,0.35);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.promo-download-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 26px rgba(219,39,119,0.45); }
+.promo-download-btn i { font-size: 18px; }
+@media (max-width: 900px) { .promo-info-section { width: 100%; } }
+
+/* ============================================================
    EVENT DETAILS STRIP
 ============================================================ */
 .event-strip {
@@ -308,6 +380,27 @@ body {
 
 /* Date-of-birth: three dropdowns that compose into one date */
 .dob-fields { display: grid; grid-template-columns: 1.3fr 1fr 1fr; gap: 10px; }
+
+/* Special-promo eligibility category cards (radio selection) */
+.promo-cat-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 560px) { .promo-cat-options { grid-template-columns: 1fr; } }
+.promo-cat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1.5px solid #ddd4ef;
+  border-radius: 12px;
+  padding: 12px 14px 12px 38px;
+  position: relative;
+  cursor: pointer;
+  background: #faf8ff;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+}
+.promo-cat:hover { border-color: #c4a3ff; }
+.promo-cat.selected { border-color: #8b5cf6; background: #fff; box-shadow: 0 0 0 3px rgba(139,92,246,0.12); }
+.promo-cat input[type="radio"] { position: absolute; left: 14px; top: 15px; width: 16px; height: 16px; accent-color: #7c3aed; }
+.promo-cat-label { font-weight: 600; font-size: 15px; color: #2a1a40; }
+.promo-cat-hint { font-size: 12px; color: #6b5080; line-height: 1.4; }
 
 /* Fields — sized for legibility on desktop; scales down on mobile below */
 .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
@@ -894,6 +987,7 @@ table.admin-table .row-actions { display: flex; gap: 4px; flex-wrap: wrap; }
 .badge.senior    { background: #ccfbf1; color: #115e59; }
 .badge.pwd       { background: #fef3c7; color: #78350f; }
 .badge.newlawyer { background: #ede9fe; color: #5b21b6; }
+.badge.promo     { background: #fce7f3; color: #9d174d; }
 
 .empty-state { padding: 3rem 1.25rem; text-align: center; color: #8a6fb2; }
 .empty-state i { font-size: 38px; color: #c4b0e8; margin-bottom: 0.5rem; }

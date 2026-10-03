@@ -73,9 +73,8 @@ export const CHAPTERS = [
 ];
 
 // ── Registration rates ────────────────────────────────────────
-// Special rates (Senior, PWD, New Lawyer 2026) share the same fee.
-// Senior + New Lawyer auto-apply from other fields; PWD is chosen manually
-// and requires a PWD ID upload.
+// Senior auto-applies from the birthday. PWD and the ₱4,500 Special Promo
+// are chosen manually and each require a supporting document upload.
 export const REGISTRATION_TYPES = [
   {
     value: "earlybird",
@@ -87,16 +86,49 @@ export const REGISTRATION_TYPES = [
   { value: "senior", label: "Senior Citizen", fee: "₱ 6,000", badge: "senior" },
   { value: "pwd", label: "PWD", fee: "₱ 6,000", badge: "pwd" },
   {
-    value: "newlawyer",
-    label: "Lawyer Admitted in 2026",
-    fee: "₱ 6,000",
-    badge: "newlawyer",
+    value: "promo",
+    label: "Special Promo – Newly Admitted / Gov't Lawyer",
+    fee: "₱ 4,500",
+    badge: "promo",
   },
 ];
 
-// Categories that qualify as the "Special" ₱6,000 rate — used to show a
-// single message on the confirmation and to group them in reports.
-export const SPECIAL_RATE_CATEGORIES = ["senior", "pwd", "newlawyer"];
+// Categories that qualify as a discounted rate — used to group them in reports.
+export const SPECIAL_RATE_CATEGORIES = ["senior", "pwd", "promo"];
+
+// ── Special Promo (₱4,500) — Newly Admitted & Government Lawyers ──
+// Individual rate (no pairing). New registrants pick it + upload a
+// verification document. Already-paid delegates claim a walk-in refund.
+export const PROMO = {
+  value: "promo",
+  feeNum: 4500,
+  categories: [
+    {
+      code: "A",
+      label: "Newly Admitted Lawyer",
+      hint: "Signed the Roll of Attorneys in CY 2025 or 2026 (incl. 2025 bar passers).",
+      docs: [
+        "Roll of Attorneys page showing your signature and 2025/2026 admission date",
+        "SC Certificate of Admission to the Bar / Oath-Taking Certificate (2025 or 2026)",
+        "Valid IBP ID explicitly showing admission year 2025 or 2026",
+      ],
+    },
+    {
+      code: "B",
+      label: "Government Lawyer",
+      hint: "Full-time, plantilla, or contractual in any Philippine government branch, agency, LGU, GOCC, SUC, PAO, NPS, etc.",
+      docs: [
+        "Valid Government Agency / Judicial ID issued for CY 2026",
+        "Certificate of Employment (COE) or certified true copy of Appointment Paper issued within CY 2026",
+      ],
+    },
+  ],
+  // Refund due to already-paid qualified delegates (claimed walk-in).
+  refund: { earlybird: 1500, regular: 2500 },
+  // Downloadable guidelines + reimbursement form hosted in public/.
+  formUrl: "/IBP-NLRC-Special-Promo-Guidelines.docx",
+  reimburseDeadlineLabel: "the Finance Desk during on-site check-in (October 15–16, 2026)",
+};
 
 // ── Early Bird promo window ───────────────────────────────────
 // The Early Bird rate is selectable only within this inclusive date
@@ -149,11 +181,6 @@ export function yearsSinceBar(barAdmission) {
   return new Date().getFullYear() - y;
 }
 
-// Lawyers admitted THIS calendar year qualify for the new-lawyer discount.
-export function isNewLawyerByBarYear(barAdmission) {
-  const y = parseInt(barAdmission, 10);
-  return Number.isFinite(y) && y === new Date().getFullYear();
-}
 
 // ── Senior citizen detection ──────────────────────────────────
 // RA 9994: senior status applies the calendar year a person turns 60,
