@@ -25,8 +25,7 @@ export default function PromoInfo() {
           </p>
           <p className="promo-refund-note">
             <i className="ti ti-info-circle" aria-hidden="true"></i>
-            Refunds will be rolled out <strong>after the convention</strong>. No action is needed now —
-            details on the disbursement process will be announced.
+            <span>Processing of reimbursement will be announced <strong>after the convention</strong>.</span>
           </p>
         </div>
       </div>
