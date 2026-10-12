@@ -72,62 +72,41 @@ export const CHAPTERS = [
   "Other",
 ];
 
-// ── Registration rates ────────────────────────────────────────
-// Senior auto-applies from the birthday. PWD and the ₱4,500 Special Promo
-// are chosen manually and each require a supporting document upload.
+// ── Registration rate ─────────────────────────────────────────
+// Flat ₱4,500 for all delegates — no registration-type selection and no
+// eligibility. Delegates who already paid ₱6,000/₱7,000 get refunds after
+// the convention (see PROMO.refund below, shown in the announcement).
+export const STANDARD_CATEGORY = "regular";
+export const STANDARD_FEE = "₱ 4,500";
+export const STANDARD_FEE_NUM = 4500;
+
 export const REGISTRATION_TYPES = [
-  {
-    value: "earlybird",
-    label: "Early Bird",
-    fee: "₱ 6,000",
-    badge: "earlybird",
-  },
-  { value: "regular", label: "Regular", fee: "₱ 7,000", badge: "regular" },
-  { value: "senior", label: "Senior Citizen", fee: "₱ 6,000", badge: "senior" },
-  { value: "pwd", label: "PWD", fee: "₱ 6,000", badge: "pwd" },
-  {
-    value: "promo",
-    label: "Special Promo – Newly Admitted / Gov't Lawyer",
-    fee: "₱ 4,500",
-    badge: "promo",
-  },
+  { value: "regular", label: "Registration", fee: STANDARD_FEE, badge: "regular" },
 ];
 
-// Categories that qualify as a discounted rate — used to group them in reports.
-export const SPECIAL_RATE_CATEGORIES = ["senior", "pwd", "promo"];
+// Display labels for every category, including legacy records created under
+// the old tiered pricing (so the admin table / CSV still read sensibly).
+export const CATEGORY_LABELS = {
+  regular: "Registration",
+  earlybird: "Early Bird",
+  senior: "Senior Citizen",
+  pwd: "PWD",
+  promo: "Special Promo",
+  newlawyer: "Lawyer Admitted in 2026",
+  walkin: "Walk-in",
+};
 
-// ── Special Promo (₱4,500) — Newly Admitted & Government Lawyers ──
-// Individual rate (no pairing). New registrants pick it + upload a
-// verification document. Already-paid delegates claim a walk-in refund.
+// Net fee per category. Everyone's net rate is ₱4,500 (those who paid more
+// are refunded the difference after the convention).
+export const CATEGORY_FEE = {
+  regular: 4500, earlybird: 4500, senior: 4500, pwd: 4500,
+  promo: 4500, newlawyer: 4500, walkin: 4500,
+};
+
+// Refund amounts for delegates who already paid at the old rates — rolled
+// out AFTER the convention. Shown in the registration-page announcement.
 export const PROMO = {
-  value: "promo",
-  feeNum: 4500,
-  categories: [
-    {
-      code: "A",
-      label: "Newly Admitted Lawyer",
-      hint: "Signed the Roll of Attorneys in CY 2025 or 2026 (incl. 2025 bar passers).",
-      docs: [
-        "Roll of Attorneys page showing your signature and 2025/2026 admission date",
-        "SC Certificate of Admission to the Bar / Oath-Taking Certificate (2025 or 2026)",
-        "Valid IBP ID explicitly showing admission year 2025 or 2026",
-      ],
-    },
-    {
-      code: "B",
-      label: "Government Lawyer",
-      hint: "Full-time, plantilla, or contractual in any Philippine government branch, agency, LGU, GOCC, SUC, PAO, NPS, etc.",
-      docs: [
-        "Valid Government Agency / Judicial ID issued for CY 2026",
-        "Certificate of Employment (COE) or certified true copy of Appointment Paper issued within CY 2026",
-      ],
-    },
-  ],
-  // Refund due to already-paid qualified delegates (claimed walk-in).
   refund: { earlybird: 1500, regular: 2500 },
-  // Downloadable guidelines + reimbursement form hosted in public/.
-  formUrl: "/IBP-NLRC-Special-Promo-Guidelines.docx",
-  reimburseDeadlineLabel: "the Finance Desk during on-site check-in (October 15–16, 2026)",
 };
 
 // ── Early Bird promo window ───────────────────────────────────
@@ -156,19 +135,6 @@ export function isEarlyBirdOpen(now = new Date()) {
   const today = localDateISO(now);
   return today >= EARLYBIRD_WINDOW.start && today <= EARLYBIRD_WINDOW.end;
 }
-
-export const CATEGORY_LABELS = REGISTRATION_TYPES.reduce((acc, t) => {
-  acc[t.value] = t.label;
-  return acc;
-}, {});
-
-// Fee (in ₱) as a number, keyed by category. Derived from REGISTRATION_TYPES
-// so the Reports page can compute revenue without re-parsing the label.
-export const CATEGORY_FEE = REGISTRATION_TYPES.reduce((acc, t) => {
-  const n = Number(String(t.fee).replace(/[^0-9.]/g, ""));
-  acc[t.value] = Number.isFinite(n) ? n : 0;
-  return acc;
-}, {});
 
 // ── Bar-anniversary awards ────────────────────────────────────
 // Years since admission that qualify for a milestone recognition. Add or

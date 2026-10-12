@@ -274,6 +274,13 @@ body {
 .promo-reimburse-head i { font-size: 20px; color: #f0a6d6; }
 .promo-reimburse p { font-size: 13.5px; color: rgba(222,202,248,0.88); line-height: 1.6; margin: 0 0 0.7rem; }
 .promo-reimburse strong { color: #ffd76a; }
+.promo-refund-note {
+  display: flex; align-items: flex-start; gap: 8px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 10px; padding: 10px 12px; margin: 0 !important;
+  font-size: 13px !important; color: rgba(225,205,250,0.9) !important;
+}
+.promo-refund-note i { color: #f0a6d6; font-size: 17px; flex-shrink: 0; margin-top: 1px; }
 .promo-download-btn {
   display: inline-flex; align-items: center; gap: 8px;
   background: linear-gradient(135deg, #db2777, #9d174d);

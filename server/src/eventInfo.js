@@ -9,19 +9,21 @@ export const EVENT = {
 };
 
 export const CATEGORY_LABELS = {
+  regular: 'Registration',
   earlybird: 'Early Bird',
-  regular: 'Regular',
   senior: 'Senior Citizen',
   pwd: 'PWD',
-  promo: 'Special Promo (Newly Admitted / Gov’t Lawyer)',
+  promo: 'Special Promo',
   newlawyer: 'Lawyer Admitted in 2026', // legacy records
 };
 
+// Flat ₱4,500 net rate for all delegates (those who paid more are refunded
+// the difference after the convention).
 export const CATEGORY_FEE = {
-  earlybird: 6000,
-  regular: 7000,
-  senior: 6000,
-  pwd: 6000,
+  regular: 4500,
+  earlybird: 4500,
+  senior: 4500,
+  pwd: 4500,
   promo: 4500,
-  newlawyer: 6000, // legacy records
+  newlawyer: 4500, // legacy records
 };

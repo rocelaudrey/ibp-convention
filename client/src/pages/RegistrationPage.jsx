@@ -1,5 +1,4 @@
 import Hero from '../components/Hero.jsx';
-import EarlyBirdCountdown from '../components/EarlyBirdCountdown.jsx';
 import EventDetails from '../components/EventDetails.jsx';
 import RegistrationForm from '../components/RegistrationForm.jsx';
 import PromoInfo from '../components/PromoInfo.jsx';
@@ -14,7 +13,6 @@ export default function RegistrationPage() {
   return (
     <div className="page-bg">
       <Hero />
-      <EarlyBirdCountdown />
       <EventDetails />
       <PromoInfo />
       <div className="form-wrap">
