@@ -113,7 +113,7 @@ export default function AdminPage() {
   async function issueCert(ref) {
     const a = attendees.find(x => x.ref === ref);
     if (!a) return;
-    generateCertificatePDF(a);
+    await generateCertificatePDF(a);
     await update(ref, { certificateIssued: true, certificateIssuedAt: new Date().toISOString() });
   }
   async function downloadQR(ref) {
@@ -176,7 +176,7 @@ export default function AdminPage() {
       ? `Generate ${rows.length} certificate${rows.length === 1 ? '' : 's'} into a single PDF and mark ${toMark.length} as issued? ${alreadyIssued} already marked issued and will be re-included in the PDF.`
       : `Generate ${rows.length} certificate${rows.length === 1 ? '' : 's'} into a single PDF and mark them as issued?`;
     if (!confirm(summary)) return;
-    generateBulkCertificatesPDF(rows);
+    await generateBulkCertificatesPDF(rows);
     const now = new Date().toISOString();
     for (const a of toMark) {
       await update(a.ref, { certificateIssued: true, certificateIssuedAt: now });

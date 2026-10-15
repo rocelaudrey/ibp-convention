@@ -1,118 +1,84 @@
 import jsPDF from 'jspdf';
-import { EVENT_INFO } from '../config/event.js';
+
+// ──────────────────────────────────────────────────────────────
+// Certificate built on the designed template image
+// (public/cert-template.jpg). The template carries all the artwork and
+// fixed text (header, body, signature); we overlay only the registrant's
+// name — in ALL CAPS — in the blank band above the ornamental divider.
+// ──────────────────────────────────────────────────────────────
+
+const TEMPLATE_URL = '/cert-template.jpg';
+
+// A4 landscape (matches the template's 2000×1414 ≈ 1.414 ratio).
+const PAGE_W = 297; // mm
+const PAGE_H = 210; // mm
+
+// Name placement as fractions of the page (measured from the template).
+const NAME_CX = 0.429;   // content-area horizontal center
+const NAME_Y  = 0.462;   // baseline, in the blank band above the divider
+const NAME_MAX_W = 0.72; // max text width as a fraction of page width
+
+let templatePromise = null;
+function loadTemplate() {
+  if (templatePromise) return templatePromise;
+  templatePromise = fetch(TEMPLATE_URL)
+    .then((r) => r.blob())
+    .then((blob) => new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(reader.error);
+      reader.readAsDataURL(blob);
+    }));
+  return templatePromise;
+}
+
+function fitFontSize(doc, text, maxWidth, startSize, minSize = 10) {
+  let size = startSize;
+  doc.setFontSize(size);
+  while (doc.getTextWidth(text) > maxWidth && size > minSize) {
+    size -= 0.5;
+    doc.setFontSize(size);
+  }
+  return size;
+}
 
 /**
  * Draws one certificate on the CURRENT page of the given jsPDF instance.
- * Caller creates + saves the doc; used by both single and bulk generators.
+ * `templateData` is the shared template data URL (pass once for bulk).
  */
-export function drawCertificateOnDoc(doc, attendee) {
-  const W = doc.internal.pageSize.getWidth();   // 297
-  const H = doc.internal.pageSize.getHeight();  // 210
+export async function drawCertificateOnDoc(doc, attendee, templateData) {
+  const tpl = templateData || (await loadTemplate());
+  doc.addImage(tpl, 'JPEG', 0, 0, PAGE_W, PAGE_H, 'cert-tpl', 'FAST');
 
-  // Background tint
-  doc.setFillColor(252, 250, 255);
-  doc.rect(0, 0, W, H, 'F');
-
-  // Outer + inner borders
-  doc.setDrawColor(76, 29, 149); doc.setLineWidth(1.4);
-  doc.rect(8, 8, W - 16, H - 16);
-  doc.setDrawColor(155, 126, 212); doc.setLineWidth(0.4);
-  doc.rect(12, 12, W - 24, H - 24);
-
-  // Corner ornaments
-  doc.setFillColor(124, 58, 237);
-  [[18, 18], [W - 18, 18], [18, H - 18], [W - 18, H - 18]]
-    .forEach(([x, y]) => doc.circle(x, y, 1.4, 'F'));
-
-  // Top eyebrow
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-  doc.setTextColor(124, 58, 237);
-  doc.text('INTEGRATED BAR OF THE PHILIPPINES', W / 2, 32, { align: 'center' });
-
-  doc.setFontSize(8.5); doc.setTextColor(140, 110, 180);
-  doc.text(EVENT_INFO.region.toUpperCase(), W / 2, 38, { align: 'center' });
-
-  doc.setDrawColor(124, 58, 237); doc.setLineWidth(0.5);
-  doc.line(W / 2 - 22, 42, W / 2 + 22, 42);
-
-  // Main title
-  doc.setFont('times', 'bold'); doc.setFontSize(38);
-  doc.setTextColor(42, 26, 64);
-  doc.text('Certificate of Attendance', W / 2, 60, { align: 'center' });
-
-  // "This is to certify that"
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(13);
-  doc.setTextColor(90, 64, 112);
-  doc.text('This is to certify that', W / 2, 78, { align: 'center' });
-
-  // Recipient name — prefixed with "Atty." on the printed certificate.
+  // Registrant name — ALL CAPS, with the Atty. courtesy title.
   const bareName = [attendee.fname, attendee.mname, attendee.lname].filter(Boolean).join(' ');
-  const displayName = `Atty. ${bareName}`;
-  doc.setFont('times', 'bolditalic'); doc.setFontSize(34);
+  const displayName = `ATTY. ${bareName}`.toUpperCase();
+
+  doc.setFont('times', 'bold');
   doc.setTextColor(76, 29, 149);
-  doc.text(displayName, W / 2, 100, { align: 'center' });
-
-  // Underline
-  doc.setDrawColor(180, 130, 255); doc.setLineWidth(0.4);
-  const nameWidth = doc.getTextWidth(displayName);
-  doc.line(W / 2 - Math.max(nameWidth / 2, 50), 104, W / 2 + Math.max(nameWidth / 2, 50), 104);
-
-  // Body
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(12);
-  doc.setTextColor(80, 56, 100);
-  doc.text(`has actively participated in the ${EVENT_INFO.title}`, W / 2, 120, { align: 'center' });
-  doc.text(`held on ${EVENT_INFO.date} at ${EVENT_INFO.venue}.`, W / 2, 128, { align: 'center' });
-
-  // Theme
-  doc.setFont('times', 'italic'); doc.setFontSize(11);
-  doc.setTextColor(124, 58, 237);
-  doc.text(`"${EVENT_INFO.theme}"`, W / 2, 142, { align: 'center' });
-
-  // Issued date
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(10);
-  doc.setTextColor(120, 100, 150);
-  const issuedOn = new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' });
-  doc.text(`Issued on ${issuedOn}`, W / 2, 152, { align: 'center' });
-
-  // Signatures
-  const sigY = H - 38;
-  doc.setDrawColor(120, 100, 150); doc.setLineWidth(0.4);
-  doc.line(45, sigY, 105, sigY);
-  doc.line(W - 105, sigY, W - 45, sigY);
-
-  doc.setFont('helvetica', 'bold'); doc.setFontSize(10);
-  doc.setTextColor(60, 40, 90);
-  doc.text('Regional Governor', 75, sigY + 6, { align: 'center' });
-  doc.text('Convention Chairperson', W - 75, sigY + 6, { align: 'center' });
-
-  doc.setFont('helvetica', 'normal'); doc.setFontSize(8);
-  doc.setTextColor(140, 110, 180);
-  doc.text('IBP Northern Luzon Region', 75, sigY + 11, { align: 'center' });
-  doc.text('IBP Northern Luzon Region', W - 75, sigY + 11, { align: 'center' });
-
-  // Ref
-  doc.setFontSize(8); doc.setTextColor(155, 126, 212);
-  doc.text(`Ref: ${attendee.ref}`, W / 2, H - 14, { align: 'center' });
+  fitFontSize(doc, displayName, PAGE_W * NAME_MAX_W, 40);
+  doc.text(displayName, PAGE_W * NAME_CX, PAGE_H * NAME_Y, { align: 'center' });
 
   return doc;
 }
 
 /** Single-attendee certificate — creates a doc, draws, saves. */
-export function generateCertificatePDF(attendee) {
+export async function generateCertificatePDF(attendee) {
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-  drawCertificateOnDoc(doc, attendee);
+  await drawCertificateOnDoc(doc, attendee);
   const bareName = [attendee.fname, attendee.mname, attendee.lname].filter(Boolean).join(' ');
   const safeName = bareName.replace(/[^a-z0-9]+/gi, '_');
   doc.save(`Certificate_${safeName}_${attendee.ref}.pdf`);
 }
 
 /** Bulk certificates — one landscape A4 page per attendee. */
-export function generateBulkCertificatesPDF(attendees, { onProgress } = {}) {
+export async function generateBulkCertificatesPDF(attendees, { onProgress } = {}) {
   if (!attendees.length) return;
+  const tpl = await loadTemplate();
   const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
   for (let i = 0; i < attendees.length; i++) {
     if (i > 0) doc.addPage('a4', 'landscape');
-    drawCertificateOnDoc(doc, attendees[i]);
+    await drawCertificateOnDoc(doc, attendees[i], tpl);
     if (onProgress) onProgress(i + 1, attendees.length);
   }
   const stamp = new Date().toISOString().slice(0, 10);
