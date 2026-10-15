@@ -49,8 +49,17 @@ const AttendeeSchema = new mongoose.Schema(
 
     registeredAt:        { type: Date, default: Date.now },
     paid:                { type: Boolean, default: false, index: true },
+    // Legacy single check-in (Day 1). Kept for back-compat; new per-day
+    // check-ins are logged in `checkins` below.
     checkedIn:           { type: Boolean, default: false, index: true },
     checkedInAt:         { type: Date, default: null },
+    // Per-day check-in log: one entry per convention day the attendee
+    // checked in, each with its timestamp.
+    checkins: [{
+      _id: false,
+      day: { type: Number, required: true },  // 1, 2, 3
+      at:  { type: Date, default: Date.now },
+    }],
     certificateIssued:   { type: Boolean, default: false },
     certificateIssuedAt: { type: Date, default: null },
 

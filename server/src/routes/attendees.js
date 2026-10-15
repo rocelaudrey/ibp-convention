@@ -117,6 +117,50 @@ router.patch('/:ref', requireAdmin, async (req, res, next) => {
   }
 });
 
+// ─── Admin: per-day check-in ─────────────────────────────────
+// Records a check-in for a specific convention day (with timestamp). Idempotent
+// per day — if already checked in that day, returns the existing record.
+router.post('/:ref/checkin', requireAdmin, async (req, res, next) => {
+  try {
+    const day = Number(req.body?.day);
+    if (!Number.isInteger(day) || day < 1) {
+      return res.status(400).json({ error: 'A valid convention day is required.' });
+    }
+    const a = await Attendee.findOne({ ref: req.params.ref });
+    if (!a) return res.status(404).json({ error: 'Not found' });
+
+    const existing = (a.checkins || []).find((c) => c.day === day);
+    if (existing) {
+      return res.json({ ...a.toJSON(), alreadyCheckedIn: true, day, at: existing.at });
+    }
+    const at = new Date();
+    a.checkins.push({ day, at });
+    // Keep the legacy flag in sync (any day marks them generally checked-in).
+    a.checkedIn = true;
+    if (!a.checkedInAt) a.checkedInAt = at;
+    await a.save();
+    res.json({ ...a.toJSON(), day, at });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Undo a check-in for a specific day (corrections).
+router.post('/:ref/checkin/undo', requireAdmin, async (req, res, next) => {
+  try {
+    const day = Number(req.body?.day);
+    const a = await Attendee.findOne({ ref: req.params.ref });
+    if (!a) return res.status(404).json({ error: 'Not found' });
+    a.checkins = (a.checkins || []).filter((c) => c.day !== day);
+    a.checkedIn = a.checkins.length > 0;
+    if (!a.checkedIn) a.checkedInAt = null;
+    await a.save();
+    res.json(a.toJSON());
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ─── Admin: delete ───────────────────────────────────────────
 router.delete('/:ref', requireAdmin, async (req, res, next) => {
   try {
