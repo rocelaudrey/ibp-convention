@@ -5,7 +5,7 @@
 // Maintenance mode: when true, the public registration page shows an
 // "unavailable" notice instead of the form. The admin panel stays usable.
 // Flip to false and redeploy to bring registration back online.
-export const MAINTENANCE_MODE = true;
+export const MAINTENANCE_MODE = false;
 
 export const EVENT_INFO = {
   title: "IBP Northern Luzon Regional Convention",
