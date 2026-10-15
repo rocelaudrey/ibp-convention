@@ -5,10 +5,18 @@ import { sendPaymentConfirmation, mailerConfigured } from '../mailer.js';
 
 const router = Router();
 
+// Server-side registration gate. When true, new registrations are rejected
+// regardless of the client (blocks cached/already-open forms that bypass the
+// client-side maintenance screen). Flip to false to reopen.
+const REGISTRATION_CLOSED = true;
+
 // ─── Public: register ────────────────────────────────────────
-// Anyone can POST a new registration.
+// Anyone can POST a new registration (unless registration is closed).
 router.post('/', async (req, res, next) => {
   try {
+    if (REGISTRATION_CLOSED) {
+      return res.status(503).json({ error: 'Registration is temporarily closed. Please try again later.' });
+    }
     const data = req.body || {};
     const rollnum = String(data.rollnum || '').trim();
 
