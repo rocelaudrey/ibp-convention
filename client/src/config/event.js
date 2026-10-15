@@ -76,12 +76,14 @@ export const CHAPTERS = [
 // Flat ₱4,500 for all delegates — no registration-type selection and no
 // eligibility. Delegates who already paid ₱6,000/₱7,000 get refunds after
 // the convention (see PROMO.refund below, shown in the announcement).
-export const STANDARD_CATEGORY = "regular";
+// Event-day default: new registrations are tagged "walkin" so they show as
+// Walk-in in the admin table. (All categories are the same ₱4,500 net rate.)
+export const STANDARD_CATEGORY = "walkin";
 export const STANDARD_FEE = "₱ 4,500";
 export const STANDARD_FEE_NUM = 4500;
 
 export const REGISTRATION_TYPES = [
-  { value: "regular", label: "Registration", fee: STANDARD_FEE, badge: "regular" },
+  { value: "walkin", label: "Walk-in", fee: STANDARD_FEE, badge: "walkin" },
 ];
 
 // Display labels for every category, including legacy records created under
