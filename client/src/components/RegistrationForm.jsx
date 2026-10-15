@@ -106,7 +106,7 @@ export default function RegistrationForm() {
     if (!chapter)                        return setError('Please select your IBP Chapter.');
     if (chapter === 'Other' && !chapterOther.trim())
       return setError('Please enter your IBP Chapter name.');
-    if (!proof)                          return setError('Please upload your proof of payment before submitting.');
+    // Proof of payment is optional — walk-in delegates pay at the desk.
     if (!agree)                          return setError('Please agree to the terms and conditions to proceed.');
 
     const finalChapter = chapter === 'Other' ? chapterOther.trim() : chapter;
@@ -114,9 +114,12 @@ export default function RegistrationForm() {
     submitLock.current = true;
     setSubmitting(true);
     try {
+      // Proof of payment is optional (walk-ins may pay cash at the desk).
       let proofDataUrl = null;
-      try { proofDataUrl = await readFileAsDataURL(proof); }
-      catch { /* ignore — registration still proceeds */ }
+      if (proof) {
+        try { proofDataUrl = await readFileAsDataURL(proof); }
+        catch { /* ignore — registration still proceeds */ }
+      }
 
       const ref = 'IBP-NL-' + Date.now().toString().slice(-7);
       const { chapterOther: _drop, ...rest } = form;
@@ -124,8 +127,8 @@ export default function RegistrationForm() {
         ref,
         ...rest,
         chapter:      finalChapter,
-        proofName:    proof.name,
-        proofType:    proof.type || '',
+        proofName:    proof?.name || '',
+        proofType:    proof?.type || '',
         proofDataUrl,
       });
 
@@ -292,8 +295,11 @@ export default function RegistrationForm() {
 
           <div className="section-label" style={{ marginTop: '0.25rem' }}>
             <i className="ti ti-upload" aria-hidden="true"></i>
-            Upload Proof of Payment
+            Proof of Payment <span style={{ textTransform: 'none', letterSpacing: 0, color: '#8a6fb2', fontWeight: 500 }}>(optional)</span>
           </div>
+          <p style={{ fontSize: 13, color: '#6b5080', margin: '0 0 0.75rem', lineHeight: 1.5 }}>
+            Walk-in delegates may pay at the registration desk — uploading a proof is optional.
+          </p>
           <UploadZone
             file={proof}
             onFile={(f, err) => { setProof(f); if (err) setError(err); }}
