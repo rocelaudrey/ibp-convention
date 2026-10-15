@@ -17,6 +17,8 @@ export const findAttendee     = adapter.findAttendee;
 export const createAttendee   = adapter.createAttendee;
 export const updateAttendee   = adapter.updateAttendee;
 export const deleteAttendee   = adapter.deleteAttendee;
+export const checkInForDay    = adapter.checkInForDay;
+export const undoCheckInForDay = adapter.undoCheckInForDay;
 
 // Auth
 export const adminLogin         = adapter.adminLogin;

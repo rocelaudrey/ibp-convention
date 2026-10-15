@@ -52,6 +52,8 @@ export async function findAttendee(ref) {
 export async function createAttendee(data)        { return request('/api/attendees', { method: 'POST', body: JSON.stringify(data) }); }
 export async function updateAttendee(ref, patch)  { return request(`/api/attendees/${encodeURIComponent(ref)}`, { method: 'PATCH', body: JSON.stringify(patch) }); }
 export async function deleteAttendee(ref)         { return request(`/api/attendees/${encodeURIComponent(ref)}`, { method: 'DELETE' }); }
+export async function checkInForDay(ref, day)     { return request(`/api/attendees/${encodeURIComponent(ref)}/checkin`, { method: 'POST', body: JSON.stringify({ day }) }); }
+export async function undoCheckInForDay(ref, day) { return request(`/api/attendees/${encodeURIComponent(ref)}/checkin/undo`, { method: 'POST', body: JSON.stringify({ day }) }); }
 
 // ── Auth ─────────────────────────────────────────────────────
 export async function adminLogin(username, password) {

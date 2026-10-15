@@ -76,6 +76,30 @@ export async function deleteAttendee(ref) {
   return { ok: true };
 }
 
+// Per-day check-in (server-only in practice; stubs for API parity).
+export async function checkInForDay(ref, day) {
+  const list = read();
+  const a = list.find(x => x.ref === ref);
+  if (!a) return null;
+  a.checkins = a.checkins || [];
+  const existing = a.checkins.find(c => c.day === day);
+  if (existing) return { ...a, alreadyCheckedIn: true, day, at: existing.at };
+  const at = new Date().toISOString();
+  a.checkins.push({ day, at });
+  a.checkedIn = true;
+  write(list);
+  return { ...a, day, at };
+}
+export async function undoCheckInForDay(ref, day) {
+  const list = read();
+  const a = list.find(x => x.ref === ref);
+  if (!a) return null;
+  a.checkins = (a.checkins || []).filter(c => c.day !== day);
+  a.checkedIn = a.checkins.length > 0;
+  write(list);
+  return a;
+}
+
 // Admin panel is server-only. In local (no backend) mode we hard-refuse
 // login and expose a currentUser of null so the AdminPage can render the
 // "server required" screen instead of a login form.

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAdminAuth } from '../hooks/useAdminAuth.js';
 import { useAttendees } from '../hooks/useAttendees.js';
-import { CATEGORY_LABELS } from '../config/event.js';
-import { isApiMode, findAttendee } from '../services/api.js';
+import { CATEGORY_LABELS, CONVENTION_DAYS, currentConventionDay } from '../config/event.js';
+import { isApiMode, findAttendee, checkInForDay, undoCheckInForDay } from '../services/api.js';
 import { generateQRDataURL, buildQrPayload, downloadDataURL } from '../utils/qr.js';
 import { generateCertificatePDF, generateBulkCertificatesPDF } from '../utils/certificate.js';
 import { generateIdTagPDF, generateBulkIdTagsPDF } from '../utils/idTag.js';
@@ -19,7 +19,7 @@ import EditAttendeeModal from '../components/admin/EditAttendeeModal.jsx';
 
 export default function AdminPage() {
   const { isAuthed, user, isSuperAdmin, login, logout } = useAdminAuth();
-  const { attendees, update, remove } = useAttendees({ enabled: isAuthed });
+  const { attendees, update, remove, refresh } = useAttendees({ enabled: isAuthed });
 
   const [search,  setSearch]  = useState('');
   const [chapter, setChapter] = useState('');
@@ -97,11 +97,29 @@ export default function AdminPage() {
     const a = attendees.find(x => x.ref === ref);
     if (a) await update(ref, { paid: !a.paid });
   }
-  async function toggleCheckIn(ref) {
+  // ── Per-day check-in ──────────────────────────────────────────
+  // Each check-in is logged with its own timestamp in attendee.checkins
+  // ([{ day, at }]). The server is the source of truth (idempotent per
+  // day); we refresh after each change and hand the result back so the
+  // check-in bar can show the logged time.
+  async function checkInDay(ref, day) {
+    const res = await checkInForDay(ref, day);
+    await refresh();
+    return res;
+  }
+  async function undoCheckInDay(ref, day) {
+    await undoCheckInForDay(ref, day);
+    await refresh();
+  }
+  // Single-button toggle (table + detail modal): acts on the current
+  // convention day — check in if not yet in for today, else undo today's.
+  async function toggleCheckInToday(ref) {
     const a = attendees.find(x => x.ref === ref);
     if (!a) return;
-    const checking = !a.checkedIn;
-    await update(ref, { checkedIn: checking, checkedInAt: checking ? new Date().toISOString() : null });
+    const day = currentConventionDay();
+    const has = (a.checkins || []).some(c => c.day === day);
+    if (has) await undoCheckInDay(ref, day);
+    else     await checkInDay(ref, day);
   }
   async function deleteOne(ref) {
     const a = attendees.find(x => x.ref === ref);
@@ -134,9 +152,14 @@ export default function AdminPage() {
     const headers = [
       'Ref','First Name','Middle Name','Last Name','Birthday','Email','Phone',
       'Roll of Attorneys Number','Chapter','Bar Admission Year','Type',
-      'Dietary','Registered At','Paid','Checked-In','Checked-In At',
+      'Dietary','Registered At','Paid',
+      ...CONVENTION_DAYS.map(d => `${d.label} Check-In`),
       'Certificate Issued','Certificate Issued At'
     ];
+    const checkinAt = (a, day) => {
+      const c = (a.checkins || []).find(x => x.day === day);
+      return c ? new Date(c.at).toLocaleString('en-PH') : '';
+    };
     const esc = v => {
       if (v == null) return '';
       const s = String(v);
@@ -145,8 +168,9 @@ export default function AdminPage() {
     const rowsCsv = attendees.map(a => [
       a.ref, a.fname, a.mname, a.lname, a.birthday || '', a.email, a.phone,
       a.rollnum, a.chapter, a.barAdmission, CATEGORY_LABELS[a.category] || a.category,
-      a.dietary, a.registeredAt, a.paid ? 'Yes' : 'No', a.checkedIn ? 'Yes' : 'No',
-      a.checkedInAt || '', a.certificateIssued ? 'Yes' : 'No', a.certificateIssuedAt || ''
+      a.dietary, a.registeredAt, a.paid ? 'Yes' : 'No',
+      ...CONVENTION_DAYS.map(d => checkinAt(a, d.day)),
+      a.certificateIssued ? 'Yes' : 'No', a.certificateIssuedAt || ''
     ].map(esc).join(','));
     const csv = [headers.join(','), ...rowsCsv].join('\n');
     const blob = new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' });
@@ -187,7 +211,7 @@ export default function AdminPage() {
     <div className="admin-view">
       <AdminHeader user={user} isSuperAdmin={isSuperAdmin} onLogout={logout} />
       <StatsCards attendees={attendees} />
-      <CheckInBar attendees={attendees} onCheckIn={toggleCheckIn} />
+      <CheckInBar attendees={attendees} onCheckInDay={checkInDay} />
       <FiltersBar
         search={search}   setSearch={setSearch}
         chapter={chapter} setChapter={setChapter} chapters={chapters}
@@ -204,7 +228,7 @@ export default function AdminPage() {
             totalCount={attendees.length}
             onView={setOpenRef}
             onTogglePaid={togglePaid}
-            onToggleCheckIn={toggleCheckIn}
+            onToggleCheckIn={toggleCheckInToday}
             onIssueCert={issueCert}
             onDownloadQR={downloadQR}
             onPrintIdTag={printIdTag}
@@ -221,7 +245,9 @@ export default function AdminPage() {
           onEdit={() => setEditing(true)}
           onClose={() => setOpenRef(null)}
           onTogglePaid={togglePaid}
-          onToggleCheckIn={toggleCheckIn}
+          conventionDays={CONVENTION_DAYS}
+          onCheckInDay={checkInDay}
+          onUndoCheckInDay={undoCheckInDay}
           onIssueCert={issueCert}
           onDownloadQR={downloadQR}
           onPrintIdTag={printIdTag}

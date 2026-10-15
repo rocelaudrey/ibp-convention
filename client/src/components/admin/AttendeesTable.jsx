@@ -1,4 +1,4 @@
-import { CATEGORY_LABELS } from '../../config/event.js';
+import { CATEGORY_LABELS, CONVENTION_DAYS, currentConventionDay } from '../../config/event.js';
 
 function fmtDate(iso) {
   if (!iso) return '—';
@@ -14,11 +14,23 @@ function fullName(a) {
 }
 
 function StatusBadges({ a }) {
+  const days = a.checkins || [];
   return (
     <>
       <span className={`badge ${a.paid ? 'paid' : 'unpaid'}`}>{a.paid ? 'Paid' : 'Unpaid'}</span>
       {' '}
-      {a.checkedIn         && <span className="badge checked">Checked-in</span>}
+      {CONVENTION_DAYS.length > 0 && (
+        <span className="day-chips" title="Per-day check-in">
+          {CONVENTION_DAYS.map(d => (
+            <span
+              key={d.day}
+              className={`day-chip${days.some(c => c.day === d.day) ? ' on' : ''}`}
+            >
+              D{d.day}
+            </span>
+          ))}
+        </span>
+      )}
       {' '}
       {a.certificateIssued && <span className="badge cert">Cert</span>}
     </>
@@ -44,6 +56,8 @@ export default function AttendeesTable({
     );
   }
 
+  const today = currentConventionDay();
+
   return (
     <div className="admin-table-scroll">
       <table className="admin-table">
@@ -62,6 +76,7 @@ export default function AttendeesTable({
           {attendees.map(a => {
             const cat = CATEGORY_LABELS[a.category] || a.category || '—';
             const catCls = a.category || 'regular';
+            const checkedToday = (a.checkins || []).some(c => c.day === today);
             return (
               <tr key={a.ref}>
                 <td className="col-ref">{a.ref}</td>
@@ -83,8 +98,8 @@ export default function AttendeesTable({
                     <button className="row-action-btn" title={a.paid ? 'Mark unpaid' : 'Mark paid'} onClick={() => onTogglePaid(a.ref)}>
                       <i className={`ti ti-${a.paid ? 'cash-off' : 'cash'}`}></i>
                     </button>
-                    <button className="row-action-btn" title={a.checkedIn ? 'Undo check-in' : 'Check in'} onClick={() => onToggleCheckIn(a.ref)}>
-                      <i className={`ti ti-${a.checkedIn ? 'clipboard-x' : 'clipboard-check'}`}></i>
+                    <button className="row-action-btn" title={checkedToday ? `Undo Day ${today} check-in` : `Check in for Day ${today}`} onClick={() => onToggleCheckIn(a.ref)}>
+                      <i className={`ti ti-${checkedToday ? 'clipboard-x' : 'clipboard-check'}`}></i>
                     </button>
                     <button className="row-action-btn" title="Print ID name tag (3×4 in)" onClick={() => onPrintIdTag(a.ref)}>
                       <i className="ti ti-id-badge-2"></i>

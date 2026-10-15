@@ -17,18 +17,19 @@ export default function AttendeeDetailModal({
   attendee,
   loadingFull = false,
   canEdit = false,
+  conventionDays = [],
   onClose,
   onEdit,
-  onTogglePaid, onToggleCheckIn, onIssueCert, onDownloadQR, onPrintIdTag, onDelete
+  onTogglePaid, onCheckInDay, onUndoCheckInDay, onIssueCert, onDownloadQR, onPrintIdTag, onDelete
 }) {
   if (!attendee) return null;
   const a = attendee;
   const fullName = [a.fname, a.mname, a.lname].filter(Boolean).join(' ');
   const initials = (a.fname?.[0] || '') + (a.lname?.[0] || '');
+  const checkins = a.checkins || [];
 
   const statusBits = [];
   statusBits.push(a.paid ? 'Paid' : 'Unpaid');
-  if (a.checkedIn)         statusBits.push(`Checked-in${a.checkedInAt ? ' (' + fmt(a.checkedInAt) + ')' : ''}`);
   if (a.certificateIssued) statusBits.push('Certificate issued');
   if (a.confirmationEmailSentAt) statusBits.push(`Confirmation emailed (${fmt(a.confirmationEmailSentAt)})`);
 
@@ -86,6 +87,35 @@ export default function AttendeeDetailModal({
           <div className="dg-item"><div className="dg-label">Registered</div><div className="dg-value">{fmt(a.registeredAt)}</div></div>
           <div className="dg-item"><div className="dg-label">Status</div><div className="dg-value">{statusBits.join(' · ')}</div></div>
         </div>
+
+        {conventionDays.length > 0 && (
+          <div className="checkin-log">
+            <div className="cl-title">
+              <i className="ti ti-clipboard-check" aria-hidden="true"></i> Check-in Log
+            </div>
+            <div className="cl-days">
+              {conventionDays.map(d => {
+                const c = checkins.find(x => x.day === d.day);
+                return (
+                  <div key={d.day} className={`cl-day${c ? ' on' : ''}`}>
+                    <div className="cl-day-head">
+                      <span className="cl-day-label">{d.label}</span>
+                      <span className="cl-day-sub">{d.sub}</span>
+                    </div>
+                    <div className="cl-day-time">{c ? fmt(c.at) : 'Not checked in'}</div>
+                    {c
+                      ? <button type="button" className="cl-btn undo" onClick={() => onUndoCheckInDay(a.ref, d.day)}>
+                          <i className="ti ti-x" aria-hidden="true"></i> Undo
+                        </button>
+                      : <button type="button" className="cl-btn" onClick={() => onCheckInDay(a.ref, d.day)}>
+                          <i className="ti ti-check" aria-hidden="true"></i> Check in
+                        </button>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         <div className="detail-proof">
           <div className="proof-name">
@@ -150,10 +180,6 @@ export default function AttendeeDetailModal({
           <button className="ghost" onClick={() => onTogglePaid(a.ref)}>
             <i className={`ti ti-${a.paid ? 'cash-off' : 'cash'}`} aria-hidden="true"></i>
             {a.paid ? ' Mark Unpaid' : ' Mark Paid'}
-          </button>
-          <button className="ghost" onClick={() => onToggleCheckIn(a.ref)}>
-            <i className={`ti ti-${a.checkedIn ? 'clipboard-x' : 'clipboard-check'}`} aria-hidden="true"></i>
-            {a.checkedIn ? ' Undo Check-in' : ' Check In'}
           </button>
           <button onClick={() => onPrintIdTag(a.ref)}>
             <i className="ti ti-id-badge-2" aria-hidden="true"></i> Print ID Tag (3×4 in)

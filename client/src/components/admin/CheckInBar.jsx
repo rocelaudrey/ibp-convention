@@ -1,10 +1,19 @@
 import { useCallback, useState } from 'react';
 import ScanQrModal from './ScanQrModal.jsx';
+import { CONVENTION_DAYS, currentConventionDay } from '../../config/event.js';
 
-export default function CheckInBar({ attendees, onCheckIn }) {
+const fmtTime = (iso) => {
+  try { return new Date(iso).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }); }
+  catch { return ''; }
+};
+
+export default function CheckInBar({ attendees, onCheckInDay }) {
+  const [day, setDay] = useState(() => currentConventionDay());
   const [value, setValue] = useState('');
   const [result, setResult] = useState({ tone: '', text: '' });
   const [scanning, setScanning] = useState(false);
+
+  const dayLabel = CONVENTION_DAYS.find((d) => d.day === day)?.label || `Day ${day}`;
 
   // Extract a ref from either a JSON QR payload or a plain string.
   function extractRef(raw) {
@@ -18,16 +27,21 @@ export default function CheckInBar({ attendees, onCheckIn }) {
   }
 
   async function checkInByRef(ref) {
-    const a = attendees.find(x => x.ref === ref);
+    const a = attendees.find((x) => x.ref === ref);
     if (!a) {
       setResult({ tone: 'err', text: `No registrant found for "${ref}"` });
       return;
     }
-    if (a.checkedIn) {
-      setResult({ tone: '', text: `${a.fname} ${a.lname} was already checked in.` });
-    } else {
-      await onCheckIn(a.ref);
-      setResult({ tone: 'ok', text: `✓ Checked in: ${a.fname} ${a.lname} (${a.chapter || ''})` });
+    try {
+      const res = await onCheckInDay(a.ref, day);
+      const t = res?.at ? fmtTime(res.at) : '';
+      if (res?.alreadyCheckedIn) {
+        setResult({ tone: '', text: `${a.fname} ${a.lname} is already checked in for ${dayLabel}${t ? ' (' + t + ')' : ''}.` });
+      } else {
+        setResult({ tone: 'ok', text: `✓ ${dayLabel} check-in: ${a.fname} ${a.lname} (${a.chapter || ''})${t ? ' — ' + t : ''}` });
+      }
+    } catch (e) {
+      setResult({ tone: 'err', text: e.message || 'Check-in failed.' });
     }
     setValue('');
   }
@@ -48,15 +62,26 @@ export default function CheckInBar({ attendees, onCheckIn }) {
     }
     setValue(ref);
     checkInByRef(ref);
-  }, [attendees, onCheckIn]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [attendees, onCheckInDay, day]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ padding: '1rem 1.5rem 0' }}>
       <div className="checkin-bar">
         <div className="ci-icon"><i className="ti ti-qrcode-scan" aria-hidden="true"></i></div>
+        <select
+          className="ci-day"
+          value={day}
+          onChange={(e) => setDay(Number(e.target.value))}
+          aria-label="Convention day to check in for"
+          title="Convention day"
+        >
+          {CONVENTION_DAYS.map((d) => (
+            <option key={d.day} value={d.day}>{d.label} · {d.sub}</option>
+          ))}
+        </select>
         <input
           type="text"
-          placeholder="Scan or paste reference number (e.g. IBP-NL-1234567)"
+          placeholder={`Scan or paste ref to check in for ${dayLabel}`}
           value={value}
           onChange={(e) => setValue(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}

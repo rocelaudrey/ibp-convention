@@ -17,6 +17,26 @@ export const EVENT_INFO = {
   email: "ibpnlrc2026admin@gmail.com",
 };
 
+// ── Convention days (for per-day check-in) ────────────────────
+export const CONVENTION_DAYS = [
+  { day: 1, date: "2026-10-15", label: "Day 1", sub: "Oct 15" },
+  { day: 2, date: "2026-10-16", label: "Day 2", sub: "Oct 16" },
+  { day: 3, date: "2026-10-17", label: "Day 3", sub: "Oct 17" },
+];
+
+// Which convention day is "today" (by local date); defaults to the last
+// day on/after today, else Day 1 — so the check-in bar pre-selects sensibly.
+export function currentConventionDay(now = new Date()) {
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const today = `${y}-${m}-${d}`;
+  const match = CONVENTION_DAYS.find((c) => c.date === today);
+  if (match) return match.day;
+  const upcoming = CONVENTION_DAYS.find((c) => c.date >= today);
+  return upcoming ? upcoming.day : CONVENTION_DAYS[CONVENTION_DAYS.length - 1].day;
+}
+
 // ── Venue + nearby hotels ─────────────────────────────────────
 // `mapsQuery` is the search string passed to Google Maps. Tweak it
 // to refine the pin or open a different result.

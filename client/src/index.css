@@ -1059,6 +1059,81 @@ table.admin-table .row-actions { display: flex; gap: 4px; flex-wrap: wrap; }
 .checkin-bar .ci-result.ok  { color: #166534; }
 .checkin-bar .ci-result.err { color: #b91c1c; }
 
+/* Convention-day selector in the check-in bar */
+.checkin-bar .ci-day {
+  height: var(--ci-h);
+  border: 1.5px solid #ddd4ef;
+  border-radius: 10px;
+  padding: 0 14px;
+  font-size: 15px; font-weight: 700;
+  font-family: 'Source Sans 3', sans-serif;
+  color: #4c1d95;
+  background: #f3eeff;
+  outline: none;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.checkin-bar .ci-day:focus { border-color: #8b5cf6; box-shadow: 0 0 0 3px rgba(139,92,246,0.12); }
+
+/* Per-day check-in chips in the attendees table */
+.day-chips { display: inline-flex; gap: 3px; vertical-align: middle; }
+.day-chip {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 26px; height: 18px; padding: 0 5px;
+  border-radius: 5px;
+  font-size: 10.5px; font-weight: 700; letter-spacing: 0.3px;
+  background: #eceaf2; color: #a99cc4;
+  border: 1px solid #e0dcec;
+}
+.day-chip.on { background: #dbeafe; color: #1e40af; border-color: #bfd4fb; }
+
+/* Per-day check-in log in the detail modal */
+.checkin-log {
+  margin: 1rem 0 0;
+  padding: 14px 16px;
+  background: #faf8ff;
+  border: 1.5px solid #e9e2fb;
+  border-radius: 12px;
+}
+.checkin-log .cl-title {
+  font-size: 13px; font-weight: 700; color: #5b21b6;
+  display: flex; align-items: center; gap: 7px; margin-bottom: 10px;
+}
+.checkin-log .cl-title i { font-size: 17px; }
+.checkin-log .cl-days {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
+}
+.cl-day {
+  background: #fff;
+  border: 1.5px solid #e4ddf4;
+  border-radius: 10px;
+  padding: 10px 12px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.cl-day.on { border-color: #93c5fd; background: #f2f8ff; }
+.cl-day-head { display: flex; align-items: baseline; gap: 6px; }
+.cl-day-label { font-size: 14px; font-weight: 700; color: #2a1a40; }
+.cl-day-sub { font-size: 11.5px; color: #8a6fb2; }
+.cl-day-time { font-size: 12.5px; color: #4b5563; min-height: 16px; }
+.cl-day.on .cl-day-time { color: #1e40af; font-weight: 600; }
+.cl-btn {
+  align-self: flex-start;
+  border: none; border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 13px; font-weight: 600;
+  font-family: 'Source Sans 3', sans-serif;
+  cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  background: #15803d; color: #fff;
+  transition: background 0.15s;
+}
+.cl-btn i { font-size: 15px; }
+.cl-btn:hover { background: #166534; }
+.cl-btn.undo { background: #ede8fc; color: #5b21b6; }
+.cl-btn.undo:hover { background: #ddd0f5; }
+
 /* — QR scan modal — */
 .scan-modal { max-width: 460px; text-align: center; }
 .qr-reader {
