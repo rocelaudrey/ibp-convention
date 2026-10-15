@@ -8,7 +8,7 @@ const router = Router();
 // Server-side registration gate. When true, new registrations are rejected
 // regardless of the client (blocks cached/already-open forms that bypass the
 // client-side maintenance screen). Flip to false to reopen.
-const REGISTRATION_CLOSED = true;
+const REGISTRATION_CLOSED = false;
 
 // ─── Public: register ────────────────────────────────────────
 // Anyone can POST a new registration (unless registration is closed).
