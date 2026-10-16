@@ -14,9 +14,9 @@ const PAGE_W = 297; // mm
 const PAGE_H = 210; // mm
 
 // Name placement as fractions of the page (measured from the template).
-const NAME_CX = 0.429;   // content-area horizontal center
-const NAME_Y  = 0.462;   // baseline, in the blank band above the divider
-const NAME_MAX_W = 0.72; // max text width as a fraction of page width
+const NAME_CX = 0.420;   // content-area horizontal center (matches title)
+const NAME_Y  = 0.466;   // baseline, in the blank band above the divider
+const NAME_MAX_W = 0.60; // max text width as a fraction of page width
 
 let templatePromise = null;
 function loadTemplate() {
