@@ -19,6 +19,7 @@ export const updateAttendee   = adapter.updateAttendee;
 export const deleteAttendee   = adapter.deleteAttendee;
 export const checkInForDay    = adapter.checkInForDay;
 export const undoCheckInForDay = adapter.undoCheckInForDay;
+export const backfillCheckins = adapter.backfillCheckins;
 
 // Auth
 export const adminLogin         = adapter.adminLogin;

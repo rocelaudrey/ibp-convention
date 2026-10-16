@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { Attendee } from '../models/Attendee.js';
-import { requireAdmin } from '../middleware/auth.js';
+import { requireAdmin, requireSuperAdmin } from '../middleware/auth.js';
 import { sendPaymentConfirmation, mailerConfigured } from '../mailer.js';
 
 const router = Router();
@@ -156,6 +156,44 @@ router.post('/:ref/checkin/undo', requireAdmin, async (req, res, next) => {
     if (!a.checkedIn) a.checkedInAt = null;
     await a.save();
     res.json(a.toJSON());
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ─── Admin: recover legacy (pre-per-day) check-ins ───────────
+// Before per-day check-in existed, a check-in was a single boolean
+// (checkedIn + checkedInAt). Day 1 (Oct 15) was recorded that way. This
+// one-time, super-admin-only backfill converts each legacy check-in into
+// a dated per-day entry so it appears in the per-day views. Idempotent:
+// it only adds an entry for a day that isn't already logged, so it is safe
+// to run more than once.
+const CONVENTION_DAY_DATES = [
+  { day: 1, date: '2026-10-15' },
+  { day: 2, date: '2026-10-16' },
+  { day: 3, date: '2026-10-17' },
+];
+function conventionDayFor(at) {
+  if (!at) return 1; // no timestamp → treat as Day 1 (the legacy single day)
+  // Match on the Manila calendar date (check-ins happen in PH local time).
+  const d = new Date(at).toLocaleDateString('en-CA', { timeZone: 'Asia/Manila' });
+  const match = CONVENTION_DAY_DATES.find((x) => x.date === d);
+  return match ? match.day : 1; // outside the window → fall back to Day 1
+}
+router.post('/backfill-checkins', requireSuperAdmin, async (req, res, next) => {
+  try {
+    const legacy = await Attendee.find({ checkedIn: true });
+    let migrated = 0;
+    const byDay = {};
+    for (const a of legacy) {
+      const day = conventionDayFor(a.checkedInAt);
+      if ((a.checkins || []).some((c) => c.day === day)) continue;
+      a.checkins.push({ day, at: a.checkedInAt || new Date() });
+      await a.save();
+      migrated += 1;
+      byDay[day] = (byDay[day] || 0) + 1;
+    }
+    res.json({ ok: true, scanned: legacy.length, migrated, byDay });
   } catch (err) {
     next(err);
   }

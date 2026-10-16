@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAdminAuth } from '../hooks/useAdminAuth.js';
 import { useAttendees } from '../hooks/useAttendees.js';
 import { CATEGORY_LABELS, CONVENTION_DAYS, currentConventionDay } from '../config/event.js';
-import { isApiMode, findAttendee, checkInForDay, undoCheckInForDay } from '../services/api.js';
+import { isApiMode, findAttendee, checkInForDay, undoCheckInForDay, backfillCheckins } from '../services/api.js';
 import { generateQRDataURL, buildQrPayload, downloadDataURL } from '../utils/qr.js';
 import { generateCertificatePDF, generateBulkCertificatesPDF } from '../utils/certificate.js';
 import { generateIdTagPDF, generateBulkIdTagsPDF } from '../utils/idTag.js';
@@ -121,6 +121,29 @@ export default function AdminPage() {
     if (has) await undoCheckInDay(ref, day);
     else     await checkInDay(ref, day);
   }
+  // One-time recovery of check-ins made before per-day logging existed
+  // (e.g. Day 1). Imports them into the per-day view. Super-admin only.
+  async function recoverLegacyCheckins() {
+    const ok = confirm(
+      'Import check-ins made before per-day logging (e.g. Day 1) into the per-day view?\n\n' +
+      'Safe to run — it only fills in missing days and never duplicates.'
+    );
+    if (!ok) return;
+    try {
+      const res = await backfillCheckins();
+      await refresh();
+      const byDay = res?.byDay || {};
+      const parts = Object.keys(byDay).sort().map(d => `Day ${d}: ${byDay[d]}`);
+      alert(
+        res?.migrated
+          ? `Recovered ${res.migrated} check-in${res.migrated === 1 ? '' : 's'}` +
+            (parts.length ? ` (${parts.join(', ')}).` : '.')
+          : 'Nothing to recover — no earlier check-ins were found that weren’t already in the per-day view.'
+      );
+    } catch (e) {
+      alert(e.message || 'Recovery failed.');
+    }
+  }
   async function deleteOne(ref) {
     const a = attendees.find(x => x.ref === ref);
     if (!a) return;
@@ -219,6 +242,7 @@ export default function AdminPage() {
         onExportCSV={exportCSV}
         onBulkPrintTags={bulkPrintTags}
         onBulkIssueCerts={bulkIssueCerts}
+        onRecoverLegacy={isSuperAdmin ? recoverLegacyCheckins : undefined}
         bulkCount={rows.length}
       />
       <div className="admin-table-wrap">

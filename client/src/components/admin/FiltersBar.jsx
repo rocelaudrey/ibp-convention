@@ -5,6 +5,7 @@ export default function FiltersBar({
   onExportCSV,
   onBulkPrintTags,
   onBulkIssueCerts,
+  onRecoverLegacy,
   bulkCount = 0,
 }) {
   const bulkLabel = bulkCount > 0 ? ` (${bulkCount})` : '';
@@ -49,6 +50,15 @@ export default function FiltersBar({
             title={bulkCount === 0 ? 'No attendees in the current view' : 'Generates a PDF and marks each as certificate issued'}
           >
             <i className="ti ti-certificate" aria-hidden="true"></i> Issue certificates{bulkLabel}
+          </button>
+        )}
+        {onRecoverLegacy && (
+          <button
+            className="ghost"
+            onClick={onRecoverLegacy}
+            title="One-time: import check-ins made before per-day logging (e.g. Day 1) into the per-day view"
+          >
+            <i className="ti ti-history" aria-hidden="true"></i> Recover Day 1
           </button>
         )}
       </div>

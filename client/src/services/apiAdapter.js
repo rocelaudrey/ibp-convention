@@ -54,6 +54,9 @@ export async function updateAttendee(ref, patch)  { return request(`/api/attende
 export async function deleteAttendee(ref)         { return request(`/api/attendees/${encodeURIComponent(ref)}`, { method: 'DELETE' }); }
 export async function checkInForDay(ref, day)     { return request(`/api/attendees/${encodeURIComponent(ref)}/checkin`, { method: 'POST', body: JSON.stringify({ day }) }); }
 export async function undoCheckInForDay(ref, day) { return request(`/api/attendees/${encodeURIComponent(ref)}/checkin/undo`, { method: 'POST', body: JSON.stringify({ day }) }); }
+// One-time recovery: convert legacy (pre-per-day) check-ins into dated
+// per-day entries. Super-admin only; idempotent on the server.
+export async function backfillCheckins()          { return request('/api/attendees/backfill-checkins', { method: 'POST' }); }
 
 // ── Auth ─────────────────────────────────────────────────────
 export async function adminLogin(username, password) {

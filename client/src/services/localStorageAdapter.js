@@ -99,6 +99,9 @@ export async function undoCheckInForDay(ref, day) {
   write(list);
   return a;
 }
+export async function backfillCheckins() {
+  return { ok: true, scanned: 0, migrated: 0, byDay: {} };
+}
 
 // Admin panel is server-only. In local (no backend) mode we hard-refuse
 // login and expose a currentUser of null so the AdminPage can render the
