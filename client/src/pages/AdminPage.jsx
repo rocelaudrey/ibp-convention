@@ -67,9 +67,16 @@ export default function AdminPage() {
     }
     if (chapter)              r = r.filter(a => a.chapter === chapter);
     if (status === 'unpaid')   r = r.filter(a => !a.paid);
-    if (status === 'paid')     r = r.filter(a => a.paid);
-    if (status === 'checkedin')r = r.filter(a => a.checkedIn);
-    if (status === 'cert')     r = r.filter(a => a.certificateIssued);
+    else if (status === 'paid')     r = r.filter(a => a.paid);
+    else if (status === 'checkedin') r = r.filter(a => a.checkedIn);
+    else if (status === 'cert')     r = r.filter(a => a.certificateIssued);
+    else if (status.startsWith('checkedin:')) {
+      const day = Number(status.split(':')[1]);
+      r = r.filter(a => (a.checkins || []).some(c => c.day === day));
+    } else if (status.startsWith('notcheckedin:')) {
+      const day = Number(status.split(':')[1]);
+      r = r.filter(a => !(a.checkins || []).some(c => c.day === day));
+    }
     return r;
   }, [attendees, search, chapter, status]);
 

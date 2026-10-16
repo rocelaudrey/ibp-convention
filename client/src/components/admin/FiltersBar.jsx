@@ -1,3 +1,5 @@
+import { CONVENTION_DAYS } from '../../config/event.js';
+
 export default function FiltersBar({
   search, setSearch,
   chapter, setChapter, chapters,
@@ -25,7 +27,13 @@ export default function FiltersBar({
         <option value="">All Statuses</option>
         <option value="unpaid">Pending Payment</option>
         <option value="paid">Paid</option>
-        <option value="checkedin">Checked-In</option>
+        <option value="checkedin">Checked-In (any day)</option>
+        {CONVENTION_DAYS.map(d => (
+          <option key={d.day} value={`checkedin:${d.day}`}>Checked-In · {d.label}</option>
+        ))}
+        {CONVENTION_DAYS.map(d => (
+          <option key={`not-${d.day}`} value={`notcheckedin:${d.day}`}>Not Checked-In · {d.label}</option>
+        ))}
         <option value="cert">Certificate Issued</option>
       </select>
       <div className="filters-right">
