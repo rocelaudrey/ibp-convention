@@ -7,6 +7,12 @@
 // Flip to false and redeploy to bring registration back online.
 export const MAINTENANCE_MODE = false;
 
+// Convention concluded: when true, the public page shows a thank-you screen
+// instead of the registration form (the convention has ended). The admin
+// panel stays usable. Pair with REGISTRATION_CLOSED on the server so cached
+// forms can't still submit. Flip to false to reopen registration.
+export const CONVENTION_CONCLUDED = true;
+
 export const EVENT_INFO = {
   title: "IBP Northern Luzon Regional Convention",
   region: "Northern Luzon Region",

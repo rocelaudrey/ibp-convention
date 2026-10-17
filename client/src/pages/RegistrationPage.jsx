@@ -5,9 +5,11 @@ import PromoInfo from '../components/PromoInfo.jsx';
 import VenueMap from '../components/VenueMap.jsx';
 import Footer from '../components/Footer.jsx';
 import Maintenance from '../components/Maintenance.jsx';
-import { MAINTENANCE_MODE } from '../config/event.js';
+import ThankYou from '../components/ThankYou.jsx';
+import { MAINTENANCE_MODE, CONVENTION_CONCLUDED } from '../config/event.js';
 
 export default function RegistrationPage() {
+  if (CONVENTION_CONCLUDED) return <ThankYou />;
   if (MAINTENANCE_MODE) return <Maintenance />;
 
   return (
