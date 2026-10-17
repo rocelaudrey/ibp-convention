@@ -1787,6 +1787,12 @@ table.admin-table .row-actions { display: flex; gap: 4px; flex-wrap: wrap; }
   color: #4c1d95;
 }
 .reports-summary strong { color: #2a1a40; }
+.reports-summary .dim { color: #8a6fb2; font-weight: 500; }
+.chapters-table .dim { color: #8a6fb2; font-size: 12px; }
+/* Per-day check-in sections stack with breathing room between days. */
+.checkin-day-section { margin-top: 1.25rem; }
+.checkin-day-section:first-of-type { margin-top: 0; }
+.checkin-day-section .reports-summary { background: #faf7ff; margin-bottom: 0.5rem; }
 .reports-actions { display: inline-flex; gap: 6px; }
 .reports-actions .admin-btn {
   background: #f5f1fb;
